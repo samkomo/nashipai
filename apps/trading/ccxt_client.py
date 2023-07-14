@@ -29,23 +29,19 @@ class TradingModule:
             self.exchanges[exchange_id] = exchange
 
     def get_trades(self, exchange_id, symbol='BTC/USDT'):
-        exchange = self.exchanges.get(exchange_id)
-        print("==============================")
-        print(json.dumps(exchange.load_markets(), indent=2))
+        # exchange = self.exchanges.get(exchange_id)
+        # print("==============================")
+        # print(json.dumps(exchange.load_markets(), indent=2))
         trades = exchange.fetch_trades(symbol, limit=10)
         return trades
 
     def get_my_trades(self, exchange_id, symbol='BTC/USDT'):
         exchange = self.exchanges.get(exchange_id)
-        print("==============================")
-        print(json.dumps(symbol, indent=2))
         trades = exchange.fetch_my_trades(symbol, limit=10)
         return trades
     
     def create_order(self, exchange_id, payload):
         exchange = self.exchanges.get(exchange_id)
-        print("==============================")
-        print(json.dumps(exchange_id, indent=2))
         order = exchange.create_order(payload['symbol'], payload['type'], payload['side'], payload['size'], payload['price'], params = payload['params'])
         return order
 

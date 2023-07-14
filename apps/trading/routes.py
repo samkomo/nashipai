@@ -24,6 +24,10 @@ def create_order():
     if request.method == 'POST':
         payload = request.get_json()
         exchange_id = payload['exchange'].lower()
+        # If the symbol ends with ".P", trim it out
+        if payload['symbol'].endswith('.P'):
+            payload['symbol'] = payload['symbol'].replace('.P', '')
+
         print(json.dumps(payload, indent=2))
 
         order = trading_module.create_order(exchange_id, payload)

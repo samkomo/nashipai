@@ -1,0 +1,13 @@
+{
+   "passphrase" : "MZXW633PN5XW6MZX",
+   "exchange":"{{exchange}}",
+   "order_id": "{{strategy.order.id}}",
+   "symbol":"{{ticker}}",
+   "price":{{strategy.order.price}},
+   "side":"{{strategy.order.action}}",
+   "size":{{strategy.order.contracts}},
+  "pos_size":{{strategy.position_size}},
+   "type":"limit",
+   "market_pos":"{{strategy.market_position}}",
+   "params":{{strategy.order.alert_message}}
+}

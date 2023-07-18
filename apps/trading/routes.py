@@ -24,6 +24,10 @@ def create_order():
     if request.method == 'POST':
         payload = request.get_json()
         exchange_id = payload['exchange'].lower()
+        subaccount = payload.get('subaccount')
+        
+        trading_module.setup_exchanges(subaccount=subaccount)
+        
         # If the symbol ends with ".P", trim it out
         if payload['symbol'].endswith('.P'):
             payload['symbol'] = payload['symbol'].replace('.P', '')

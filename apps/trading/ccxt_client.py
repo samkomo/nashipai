@@ -9,12 +9,22 @@ class TradingModule:
         self.exchanges = {}
         self.setup_exchanges()
 
-    def setup_exchanges(self):
+    def setup_exchanges(self, subaccount=None):
         exchanges_config = config_dict['Production'].EXCHANGES
 
         for exchange_id, exchange_config in exchanges_config.items():
-            api_key = exchange_config['API_KEY']
-            api_secret = exchange_config['API_SECRET']
+            subaccount_config = exchange_config.get('SUBACCOUNT', {}).get(subaccount)
+
+            if subaccount_config:
+                api_key = subaccount_config['API_KEY']
+                api_secret = subaccount_config['API_SECRET']
+            else:
+                api_key = exchange_config['API_KEY']
+                api_secret = exchange_config['API_SECRET']
+
+            
+            # print("==============================")
+            print(json.dumps(subaccount_config, indent=2))
 
             exchange_class = getattr(ccxt, exchange_id.lower())
             exchange = exchange_class({
@@ -23,13 +33,15 @@ class TradingModule:
                 'enableRateLimit': True,
                 'verbose': True
             })
-            exchange.set_sandbox_mode(True) # activates testnet mode
+            exchange.set_sandbox_mode(True)  # activates testnet mode
+
 
 
             self.exchanges[exchange_id] = exchange
 
+
     def get_trades(self, exchange_id, symbol='BTC/USDT'):
-        # exchange = self.exchanges.get(exchange_id)
+        exchange = self.exchanges.get(exchange_id)
         # print("==============================")
         # print(json.dumps(exchange.load_markets(), indent=2))
         trades = exchange.fetch_trades(symbol, limit=10)
@@ -42,7 +54,16 @@ class TradingModule:
     
     def create_order(self, exchange_id, payload):
         exchange = self.exchanges.get(exchange_id)
-        order = exchange.create_order(payload['symbol'], payload['type'], payload['side'], payload['size'], payload['price'], params = payload['params'])
+
+        # Create the order using the exchange object
+        order = exchange.create_order(
+            payload['symbol'],
+            payload['type'],
+            payload['side'],
+            payload['size'],
+            payload['price'],
+            params=payload['params']
+        )
         return order
 
     def get_orders(self, exchange_id, symbol=None):

@@ -25,7 +25,7 @@ def create_order():
     if request.method == 'POST':
         payload = request.get_json()
         exchange_id = payload['exchange'].lower()
-        subaccount = payload.get('strategy')
+        subaccount = payload.get('subaccount')
         
         trading_module.setup_exchanges(subaccount=subaccount)
         
@@ -49,7 +49,7 @@ def create_order():
             size=payload['size'],
             pos_size=payload['pos_size'],
             market_pos=payload['market_pos'],
-            strategy=subaccount,
+            strategy=payload['strategy'],
             status=order['status']
         )
         db.session.add(new_order)

@@ -42,9 +42,6 @@ class TradingModule:
                     api_key = exchange_config['API_KEY']
                     api_secret = exchange_config['API_SECRET']
 
-                # Print out the subaccount configuration for debugging
-                print(json.dumps(subaccount_config, indent=2))
-
                 # Use the CCXT library to create an exchange object
                 exchange_class = getattr(ccxt, exchange_id.lower())
                 exchange = exchange_class({
@@ -132,7 +129,6 @@ class TradingModule:
                 orders = exchange.fetch_positions(symbol)
             else:
                 orders = exchange.fetch_positions()
-            print(json.dumps(orders, indent=2))
             return orders
         except Exception as e:
             print(f"Failed to fetch orders from {exchange_id}: {e}")

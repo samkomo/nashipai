@@ -28,12 +28,7 @@
           <div class="col-sm-6">
             <h1>Trades</h1>
           </div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Trades</li>
-            </ol>
-          </div>
+          
         </div>
       </div><!-- /.container-fluid -->
     </section>
@@ -43,29 +38,55 @@
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">Trades</h3>
+          <!-- <div class="col-sm-6"> -->
+            <!-- Add the delete all button here -->
+            <button class="btn btn-danger float-right" id="deleteAllBtn">Delete All</button>
+          <!-- </div> -->
         </div>
         <!-- /.card-header -->
         <div class="card-body">
-          <table class="table">
+          <table class="table" id="trades-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Date</th>
+                <th>Exchange</th>
+                <th>Strategy</th>
+                <th>Ticker</th>
+                <th>Type</th>
                 <th>Side</th>
+                <th>Size</th>
                 <th>Price</th>
-                <th>Amount</th>
-                <th>Cost</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {% for trade in trades %}
+              <!-- {
+                'id': self.id,
+                'exchange_id': self.exchange_id,
+                'symbol': self.symbol,
+                'order_id': self.order_id,
+                'price': self.price,
+                'side': self.side,
+                'size': self.size,
+                'type': self.type,
+                'pos_size': self.pos_size,
+                'params': self.params,
+                'market_pos': self.market_pos,
+                'time': self.time.strftime('%Y-%m-%d %H:%M:%S') if self.time else None,
+                'strategy': self.strategy
+                # Add more attributes if needed
+            } -->
               <tr>
-                <td>{{ trade.id }}</td>
-                <td>{{ trade.datetime }}</td>
+                <td>{{ trade.time }}</td>
+                <td>{{ trade.exchange_id }}</td>
+                <td>{{ trade.strategy }}</td>
+                <td>{{ trade.symbol }}</td>
+                <td>{{ trade.type }}</td>
                 <td>{{ trade.side }}</td>
+                <td>{{ trade.size }}</td>
                 <td>{{ trade.price }}</td>
-                <td>{{ trade.amount }}</td>
-                <td>{{ trade.cost }}</td>
+                <td>{{ trade.status }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -82,14 +103,67 @@
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
-
-  <!-- jQuery -->
   <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
-  <!-- Bootstrap 4 -->
   <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <!-- AdminLTE App -->
   <script src="/static/assets/js/adminlte.min.js"></script>
-  <!-- AdminLTE for demo purposes -->
   <script src="/static/assets/js/demo.js"></script>
 
+  <!-- <script>
+    function updateTradesTable() {
+      $.ajax({
+        url: '/trading/trades',  // Replace this with the URL of your endpoint to fetch trades data
+        method: 'GET',
+        dataType: 'json',
+        success: function(data) {
+          // Clear the existing table content
+          $('#trades-table tbody').empty();
+          
+          // Iterate through the data and update the table
+          for (var i = 0; i < data.length; i++) {
+            var trade = data[i];
+            var row = '<tr>' +
+                      '<td>' + trade.time + '</td>' +
+                      '<td>' + trade.exchange_id + '</td>' +
+                      '<td>' + trade.strategy + '</td>' +
+                      '<td>' + trade.symbol + '</td>' +
+                      '<td>' + trade.type + '</td>' +
+                      '<td>' + trade.side + '</td>' +
+                      '<td>' + trade.size + '</td>' +
+                      '<td>' + trade.price + '</td>' +
+                      '</tr>';
+            $('#trades-table tbody').append(row);
+          }
+        },
+        error: function(error) {
+          console.log('Error fetching trades data:', error);
+        }
+      });
+    }
+
+    // Call the updateTradesTable function immediately and every 10 seconds (adjust the interval as needed)
+    $(document).ready(function() {
+      updateTradesTable();
+      setInterval(updateTradesTable, 10000);
+    });
+  </script> -->
+
+  <script>
+    $(document).ready(function() {
+      // Handler for the Delete All button click
+      $("#deleteAllBtn").click(function() {
+        // Send an AJAX request to the server to delete all orders
+        $.ajax({
+          url: '/trading/delete_all_orders',
+          method: 'POST',
+          success: function(response) {
+            // Reload the page to update the table
+            window.location.reload();
+          },
+          error: function(error) {
+            console.error('Error deleting orders:', error);
+          }
+        });
+      });
+    });
+  </script>
 {% endblock javascripts %}

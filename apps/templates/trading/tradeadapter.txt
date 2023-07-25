@@ -1,0 +1,14 @@
+ {
+    "bybit_api_key": "PUT YOUR BYBIT API KEY HERE",
+    "bybit_api_secret": "PUT YOUR BYBIT SECRER HERE",
+    "real_order":"Yes / No",
+    "order_market":"Spot / Margin / Futures / Copy",
+    "order_type":"Market / Limit",
+    "isolated_margin": "Yes / No",
+    "exchange": "{{exchange}}",
+    "ticker": "{{ticker}}",
+    "time": "{{timenow}}",
+    "order_contracts": "{{strategy.order.contracts}}",
+    "order_action": "{{strategy.order.action}}",
+    "order_price": "{{strategy.order.price}}"
+  }

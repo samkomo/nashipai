@@ -77,3 +77,18 @@ class TradingModule:
         print(json.dumps(orders, indent=2))
 
         return orders
+    
+    def get_order_by_id(self, exchange_id, order_id, symbol="BTCUSDT"):
+        exchange = self.exchanges.get(exchange_id)
+
+        try:
+            order = exchange.fetchPositions(symbol)
+            return order
+        except ccxt.OrderNotFound as e:
+            error_message = f"Order {order_id} does not exist."
+            print(f"Error retrieving order: {error_message}")
+            return error_message
+        
+        except ccxt.BaseError as e:
+            print(f"Error retrieving active order: {e}")
+            return None

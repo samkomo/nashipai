@@ -1,0 +1,57 @@
+Name,Value
+"__indicatorName","My strategy"
+"Start Year",2022
+"Start Month",7
+"Start Day",1
+"Direction","all"
+"OHLC Type","close"
+"Fast EMA",12
+"Slow EMA",25
+"Consolidated EMA",25
+"Show Both EMAs",true
+"K",3
+"D",3
+"RSI Length",14
+"Stochastic Length",14
+"Upper Band",80
+"Middle Band",50
+"Lower Band",20
+"Crossover Alert Background Colour (Middle Level) [ON/OFF]",false
+"Crossover Alert Background Colour (OB/OS Level) [ON/OFF]",false
+"Crossover Alert >input [ON/OFF]",false
+"Crossover Alert <input [ON/OFF]",false
+"MA Type","EMA"
+"MA Source","close"
+"MA Length",200
+"Use ADX/DI Filter",false
+"Len",14
+"Th",20
+"ATR Period",14
+"Source Upper","close"
+"Source Lower","close"
+"ATR Multiplier Upper",2
+"ATR Multiplier Lower",2
+"Use Bull Bear Power Filter",true
+"Length",5
+"Bull Power",50
+"Bear Power",-50
+"Use VFI Filter",false
+"VFI length",130
+"Coef",0.2
+"Max. vol. cutoff",2.5
+"SignalLength",5
+"SmoothVFI",false
+"Use CMF Volume Filter",false
+"CMF Level",0
+"Cmf_length",20
+"Use EMA Filter",false
+"Source","close"
+"Offset",0
+"Method","EMA"
+"Use MACD Filter",true
+"Fast Length",26
+"Slow Length",100
+"Signal Smoothing",9
+"Oscillator MA Type","EMA"
+"Signal Line MA Type","EMA"
+"Risk-to-Reward Ratio",1

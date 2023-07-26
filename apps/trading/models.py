@@ -18,7 +18,7 @@ class Order(db.Model):
     # New fields
     time = db.Column(db.DateTime, nullable=True, server_default=db.func.now())
     strategy = db.Column(db.String(50), nullable=True)
-    status = db.Column(db.String(20), default='Pending')
+    status = db.Column(db.String(20), default='Posted')
 
     def __repr__(self):
         return f"<Order {self.id} - {self.exchange_id}>"

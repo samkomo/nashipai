@@ -48,6 +48,7 @@
           <table class="table" id="trades-table">
             <thead>
               <tr>
+                <th>ID</th>
                 <th>Date</th>
                 <th>Exchange</th>
                 <th>Strategy</th>
@@ -57,28 +58,13 @@
                 <th>Size</th>
                 <th>Price</th>
                 <th>Position</th>
-                <th>Status</th>
+                <th>Response</th>
               </tr>
             </thead>
             <tbody>
               {% for trade in trades %}
-              <!-- {
-                'id': self.id,
-                'exchange_id': self.exchange_id,
-                'symbol': self.symbol,
-                'order_id': self.order_id,
-                'price': self.price,
-                'side': self.side,
-                'size': self.size,
-                'type': self.type,
-                'pos_size': self.pos_size,
-                'params': self.params,
-                'market_pos': self.market_pos,
-                'time': self.time.strftime('%Y-%m-%d %H:%M:%S') if self.time else None,
-                'strategy': self.strategy
-                # Add more attributes if needed
-            } -->
               <tr>
+                <td>{{ trade.id }}</td>
                 <td>{{ trade.time }}</td>
                 <td>{{ trade.exchange_id }}</td>
                 <td>{{ trade.strategy }}</td>
@@ -88,11 +74,19 @@
                 <td>{{ trade.size }}</td>
                 <td>{{ trade.price }}</td>
                 <td>{{ trade.market_pos }}</td>
-                <td>{{ trade.status }}</td>
+                <td>
+                  {% if trade.status == 'Posted' %}
+                    <span class="badge badge-info">Posted</span>
+                  {% elif trade.status == 'Error' %}
+                    <span class="badge badge-danger">Error</span>
+                  {% elif trade.status == 'Filled' %}
+                    <span class="badge badge-success">Filled</span>
+                  {% endif %}
+                </td>
                 <td class="text-right py-0 align-middle">
                   <div class="btn-group btn-group-sm">
                     <a href="#" class="btn btn-info"><i class="fas fa-eye"></i></a>
-                    <a href="#" class="btn btn-danger"><i class="fas fa-trash"></i></a>
+                    <button class="btn btn-danger delete-btn" data-id="{{ trade.id }}"><i class="fas fa-trash"></i></button>
                   </div>
                 </td>
               </tr>
@@ -116,45 +110,6 @@
   <script src="/static/assets/js/adminlte.min.js"></script>
   <script src="/static/assets/js/demo.js"></script>
 
-  <!-- <script>
-    function updateTradesTable() {
-      $.ajax({
-        url: '/trading/trades',  // Replace this with the URL of your endpoint to fetch trades data
-        method: 'GET',
-        dataType: 'json',
-        success: function(data) {
-          // Clear the existing table content
-          $('#trades-table tbody').empty();
-          
-          // Iterate through the data and update the table
-          for (var i = 0; i < data.length; i++) {
-            var trade = data[i];
-            var row = '<tr>' +
-                      '<td>' + trade.time + '</td>' +
-                      '<td>' + trade.exchange_id + '</td>' +
-                      '<td>' + trade.strategy + '</td>' +
-                      '<td>' + trade.symbol + '</td>' +
-                      '<td>' + trade.type + '</td>' +
-                      '<td>' + trade.side + '</td>' +
-                      '<td>' + trade.size + '</td>' +
-                      '<td>' + trade.price + '</td>' +
-                      '</tr>';
-            $('#trades-table tbody').append(row);
-          }
-        },
-        error: function(error) {
-          console.log('Error fetching trades data:', error);
-        }
-      });
-    }
-
-    // Call the updateTradesTable function immediately and every 10 seconds (adjust the interval as needed)
-    $(document).ready(function() {
-      updateTradesTable();
-      setInterval(updateTradesTable, 10000);
-    });
-  </script> -->
-
   <script>
     $(document).ready(function() {
       // Handler for the Delete All button click
@@ -169,6 +124,26 @@
           },
           error: function(error) {
             console.error('Error deleting orders:', error);
+          }
+        });
+      });
+
+      // Handler for the Delete button click
+      $(".delete-btn").click(function() {
+        // Get the order ID from the data-id attribute of the delete button
+        var orderId = $(this).data('id');
+
+        // Send an AJAX request to the server to delete the selected order
+        $.ajax({
+          url: '/trading/delete_order',
+          method: 'POST',
+          data: { id: orderId }, // Pass the order ID as data
+          success: function(response) {
+            // Reload the page to update the table
+            window.location.reload();
+          },
+          error: function(error) {
+            console.error('Error deleting order:', error);
           }
         });
       });

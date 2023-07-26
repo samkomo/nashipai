@@ -6,6 +6,7 @@ using the CCXT library. It includes methods for setting up exchanges, fetching t
 and getting orders by ID.
 """
 
+from datetime import datetime, timedelta
 import json
 import ccxt
 from apps.config import config_dict
@@ -101,6 +102,16 @@ class TradingModule:
     def create_order(self, exchange_id, payload):
         try:
             exchange = self.exchanges.get(exchange_id)
+            # Check if the order should use Good Till Time (GTT)
+            if payload.get('time_in_force') == 'GTT':
+                # Calculate expire time based on the 'expireAfter' parameter in payload
+                expire_after_minutes = payload.get('expire_after', 30)
+                expire_time = datetime.utcnow() + timedelta(minutes=expire_after_minutes)
+                # Set timeInForce and expireTime parameters
+                payload['params']['timeInForce'] = 'GTT'
+                payload['params']['expireTime'] = int(expire_time.timestamp())
+                print(json.dumps(payload, indent=2))
+            # execute create order
             order = exchange.create_order(
                 payload['symbol'],
                 payload['type'],
@@ -112,7 +123,7 @@ class TradingModule:
             return order
         except Exception as e:
             print(f"Failed to create order on {exchange_id}: {e}")
-            json_string = json.dumps({"errorCode": "get_my_trades_error", "status": str(e)})
+            json_string = json.dumps({"status":"Error","errorCode": "create_trade_error", "message": str(e)})
             response_json = json.loads(json_string)
             return response_json
     """

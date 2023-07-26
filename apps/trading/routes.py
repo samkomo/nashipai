@@ -40,7 +40,7 @@ def create_order():
                 side=payload['side'],
                 size=payload['size'],
                 pos_size=payload['pos_size'],
-                market_pos=payload['market_pos'],
+                market_pos=payload['order_id'],
                 strategy=payload['strategy'],
                 status=order['status']
             )
@@ -93,3 +93,18 @@ def delete_all_orders():
     Order.query.delete()
     db.session.commit()
     return jsonify({'message': 'All orders deleted successfully'})
+
+
+@blueprint.route('/delete_order', methods=['POST'])
+def delete_order():
+    try:
+        order_id = request.form.get('id')
+        order = Order.query.get(order_id)
+        if order:
+            db.session.delete(order)
+            db.session.commit()
+            return jsonify({'message': f'Order {order_id} deleted successfully'})
+        else:
+            return jsonify({'error': f'Order with ID {order_id} not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

@@ -75,11 +75,8 @@ def get_my_trades():
 def show_orders_table():
     orders = Order.query.order_by(Order.time.desc()).all()
     orders_list = [order.to_dict() for order in orders]
-    response = make_response(render_template('trading/trades.html', trades=orders_list))
-    response.cache_control.no_cache = True
-    response.cache_control.must_revalidate = True
-    response.cache_control.max_age = 0
-    return response
+    return render_template('trading/trades.html', trades=orders_list)  # Pass 'trades' variable to the template context
+
 
 @blueprint.route('/order', methods=['GET'])
 def get_order_by_id():

@@ -109,8 +109,73 @@
   <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="/static/assets/js/adminlte.min.js"></script>
   <script src="/static/assets/js/demo.js"></script>
+  <!-- Jinja template for the status badge -->
+  <script type="text/jinja2" id="status-badge-template">
+    {% if status == "Posted" %}
+      <span class="badge badge-success">Posted</span>
+    {% elif status == "Error" %}
+      <span class="badge badge-warning">Error</span>
+    {% elif status == "Filled" %}
+      <span class="badge badge-danger">Filled</span>
+    {% endif %}
+  </script>
 
   <script>
+    function updateTradesTable() {
+      $.ajax({
+        url: '/trading/trades',  // Replace this with the URL of your endpoint to fetch trades data
+        method: 'GET',
+        dataType: 'json',
+        success: function(data) {
+          // Clear the existing table content
+          $('#trades-table tbody').empty();
+          
+          // Iterate through the data and update the table
+          for (var i = 0; i < data.length; i++) {
+            var trade = data[i];
+            var statusBadge = '';
+
+            // Render the status badge using the Jinja template
+            if (trade.status) {
+              var template = $('#status-badge-template').html();
+              statusBadge = nunjucks.renderString(template, {status: trade.status});
+            }
+
+            var row = '<tr>' +
+                      '<td>' + trade.id + '</td>' +
+                      '<td>' + trade.time + '</td>' +
+                      '<td>' + trade.exchange_id + '</td>' +
+                      '<td>' + trade.strategy + '</td>' +
+                      '<td>' + trade.symbol + '</td>' +
+                      '<td>' + trade.type + '</td>' +
+                      '<td>' + trade.side + '</td>' +
+                      '<td>' + trade.size + '</td>' +
+                      '<td>' + trade.price + '</td>' +
+                      '<td>' + trade.market_pos + '</td>' +
+                      '<td>' + statusBadge + '</td>' +
+                      '<td class="text-right py-0 align-middle">' +
+                        '<div class="btn-group btn-group-sm">' +
+                          '<a href="#" class="btn btn-info"><i class="fas fa-eye"></i></a>' +
+                          '<button class="btn btn-danger delete-btn" data-id="' + trade.id + '"><i class="fas fa-trash"></i></button>' +
+                        '</div>' +
+                      '</td>' +
+                      '</tr>';
+            $('#trades-table tbody').append(row);
+          }
+        },
+        error: function(error) {
+          console.log('Error fetching trades data:', error);
+        }
+      });
+    }
+
+    // Call the updateTradesTable function immediately and every 1 minute
+    $(document).ready(function() {
+      updateTradesTable();
+      setInterval(updateTradesTable, 60000); // 1 minute = 60,000 milliseconds
+    });
+
+    
     $(document).ready(function() {
       // Handler for the Delete All button click
       $("#deleteAllBtn").click(function() {

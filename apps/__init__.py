@@ -44,9 +44,9 @@ def configure_database(app):
         db.session.remove()
 
 
-def create_app(config):
+def create_app():
     app = Flask(__name__)
-    app.config.from_object(config)
+    # app.config.from_object(config)
     register_extensions(app)
     register_blueprints(app)
     configure_database(app)

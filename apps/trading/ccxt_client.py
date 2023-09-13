@@ -9,7 +9,7 @@ and getting orders by ID.
 from datetime import datetime, timedelta
 import json
 import ccxt
-from apps.config import config_dict
+import os
 
 class TradingModule:
     """
@@ -28,36 +28,29 @@ class TradingModule:
     Parameters:
     - subaccount (str): The subaccount to use, if any. Defaults to None.
     """
-    def setup_exchanges(self, subaccount=None):
+    def setup_exchanges(self, subaccount=None, sandbox_mode=True):
+        for exchange_id in self.exchanges.keys():
+            # Fetch API key and secret for the given exchange_id from environment variables
+            api_key = os.environ.get(f'{exchange_id}_API_KEY')
+            api_secret = os.environ.get(f'{exchange_id}_API_SECRET')
+            
+            # If there's a subaccount, try to fetch its specific API key and secret
+            subaccount_api_key = os.environ.get(f'{exchange_id}_{subaccount}_API_KEY', api_key)
+            subaccount_api_secret = os.environ.get(f'{exchange_id}_{subaccount}_API_SECRET', api_secret)
 
-        exchanges_config = config_dict['Production'].EXCHANGES
+            # Use the CCXT library to create an exchange object
+            exchange_class = getattr(ccxt, exchange_id.lower())
+            exchange = exchange_class({
+                'apiKey': subaccount_api_key,
+                'secret': subaccount_api_secret,
+                'enableRateLimit': True,
+                'verbose': True
+            })
 
-        for exchange_id, exchange_config in exchanges_config.items():
-            try:
-                subaccount_config = exchange_config.get('SUBACCOUNT', {}).get(subaccount)
+            # Activates testnet mode
+            exchange.set_sandbox_mode(sandbox_mode)
 
-                if subaccount_config:
-                    api_key = subaccount_config['API_KEY']
-                    api_secret = subaccount_config['API_SECRET']
-                else:
-                    api_key = exchange_config['API_KEY']
-                    api_secret = exchange_config['API_SECRET']
-
-                # Use the CCXT library to create an exchange object
-                exchange_class = getattr(ccxt, exchange_id.lower())
-                exchange = exchange_class({
-                    'apiKey': api_key,
-                    'secret': api_secret,
-                    'enableRateLimit': True,
-                    'verbose': True
-                })
-
-                # Activates testnet mode
-                exchange.set_sandbox_mode(True)
-
-                self.exchanges[exchange_id] = exchange
-            except Exception as e:
-                return json.dumps({"errorCode": "setup_error", "status": str(e)})
+            self.exchanges[exchange_id] = exchange
     """
     Fetches trades from a specific exchange.
 

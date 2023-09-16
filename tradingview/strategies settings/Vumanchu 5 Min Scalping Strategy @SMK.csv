@@ -1,0 +1,149 @@
+Name,Value
+"__indicatorName","Vumanchu 5 Min Scalping Strategy @SMK"
+"Show WaveTrend",true
+"Show Buy dots",true
+"Show Gold dots",true
+"Show Sell dots",true
+"Show Div. dots",true
+"Show Fast WT",true
+"WT Channel Length",9
+"WT Average Length",12
+"WT MA Source","hlc3"
+"WT MA Length",3
+"WT Overbought Level 1",53
+"WT Overbought Level 2",60
+"WT Overbought Level 3",100
+"WT Oversold Level 1",-53
+"WT Oversold Level 2",-60
+"WT Oversold Level 3",-75
+"Show WT Regular Divergences",true
+"Show WT Hidden Divergences",false
+"Not apply OB/OS Limits on Hidden Divergences",true
+"WT Bearish Divergence min",45
+"WT Bullish Divergence min",-65
+"Show 2nd WT Regular Divergences",true
+"WT 2nd Bearish Divergence",15
+"WT 2nd Bullish Divergence 15 min",-40
+"Show MFI",true
+"MFI Period",60
+"MFI Area multiplier",150
+"MFI Area Y Pos",2.5
+"Show RSI",false
+"RSI Source","close"
+"RSI Length",14
+"RSI Oversold",60
+"RSI Overbought",30
+"Show RSI Regular Divergences",false
+"Show RSI Hidden Divergences",false
+"RSI Bearish Divergence min",60
+"RSI Bullish Divergence min",30
+"Show Stochastic RSI",true
+"Use Log?",true
+"Use Average of both K & D",false
+"Stochastic RSI Source","close"
+"Stochastic RSI Length",14
+"Stochastic RSI K Smooth",3
+"Stochastic RSI D Smooth",3
+"Show Stoch Regular Divergences",false
+"Show Stoch Hidden Divergences",false
+"Show Schaff TC line",false
+"Schaff TC Source","close"
+"Schaff TC",10
+"Schaff TC Fast Lenght",23
+"Schaff TC Slow Length",50
+"Schaff TC Factor",0.5
+"Show Sommi flag",false
+"Show Sommi F. Wave",false
+"Sommi F. Wave timeframe",720
+"F. Wave Bear Level (less than)",0
+"F. Wave Bull Level (more than)",0
+"WT Bear Level (more than)",0
+"WT Bull Level (less than)",0
+"Money flow Bear Level (less than)",0
+"Money flow Bull Level (more than)",0
+"Show Sommi diamond",false
+"HTF Candle Res. 1",60
+"HTF Candle Res. 2",240
+"WT Bear Level (More than)",0
+"WT Bull Level (Less than)",0
+"Show MACD Colors",false
+"MACD Colors MACD TF",240
+"Dark mode",false
+"Timezones: Src","Exchange"
+"-> Dst","Exchange"
+"Srart From ",true
+"End To       ",false
+"Select Session Days",false
+"Mon",true
+"Tue",true
+"Wed",true
+"Thu",true
+"Fri",true
+"Sat",false
+"Sun",false
+"Session Start",false
+":",0
+"Session End ",false
+"1. ADX",false
+"2. MACD",false
+"3. Bar direction=Trade direction",false
+"4. Rising Volume",false
+"5. Rising/Falling MA",false
+"Length",50
+"Bars",1
+"6. High/Low Filter",false
+"Lookback",10
+"7. Maximum close change (％) allowed on entry",false
+"8. Minimum close change (％) allowed on entry",false
+"9. RSI OS/OB",false
+"10. MA",false
+"Take Profit Type","FIXED ％"
+"Stop Loss Type","FIXED ％"
+" Profit ％    ",2
+" Stop ％  ",0.8
+" Profit ＄    ",333
+" Stop ＄  ",100
+" ATR Period  ",40
+" Multiplier",4
+" Trailing ％  ",3
+" R:R    1:",2
+"Fixed RR",true
+" HH / LL   ",200
+"  LO / HI ",5
+"Add ％",false
+" MA Stop","SMA"
+" Len",15
+" Step",1.5
+" 𝐄𝐱𝐭𝐞𝐫𝐧𝐚𝐥 𝐒𝐨𝐮𝐫𝐜𝐞  ","close"
+" Long Deals    ",true
+" Short Deals",true
+" Wait End Deal ",true
+" Reverse Deals",false
+" ReEntry Deal  ",false
+" ReOpen Deal",false
+"Loss Streak   ",15
+"Win Streak   ",15
+"Row Loss InDay",3
+"DrawDown ％",10
+"InDay Loss ％ ",3
+"Daily Trades  ",10
+"Weekly Trades",50
+"     Order Size","SIZE"
+"Use Net Profit",true
+"​🇪​​🇶​​🇺​​🇮​​🇹​​🇾​",10
+"​🇸​​🇮​​🇿​​🇪",10000
+"​🇨​​🇴​​🇳​​🇹​​🇷​​🇦​​🇨​​🇹​​🇸​",1
+"Take Profit LV 1",false
+"﻿",30
+"Take Profit LV 2",false
+"Take Profit LV 3",false
+"Take Profit LV 4",false
+"Take Profit LV 5",false
+"Stop Loss",false
+"𝐓𝐈𝐏 𝐅𝐨𝐫 𝐓𝐏","——⤴—⤴—⤴"
+" SL 0 Position",3
+"Breakeven on TP",3
+" CoolDown # Bars",0
+"Dashboard Size","Small"
+"Performance Summary",true
+"Monthly Performance",true

@@ -2,6 +2,12 @@
     "folders": [
         {
             "path": ".."
+        },
+        {
+            "path": "../../heroku/eth-chris"
+        },
+        {
+            "path": "../../tradingview-binance-strategy-alert-webhook"
         }
     ]
 }

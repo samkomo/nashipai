@@ -23,8 +23,9 @@ def create_order():
             payload = request.get_json()
             exchange_id = payload['exchange'].lower()
             subaccount = payload.get('subaccount')
+            sandbox_mode = payload.get('sandbox_mode')
 
-            trading_module.setup_exchanges(subaccount=subaccount)
+            trading_module.setup_exchanges(subaccount=subaccount,sandbox_mode=sandbox_mode)
 
             if payload['symbol'].endswith('.P'):
                 payload['symbol'] = payload['symbol'].replace('.P', '')

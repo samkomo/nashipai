@@ -1,0 +1,14 @@
+Name,Value
+"__indicatorName","MSB-OB Trade Strategy"
+"ZigZag Length",9
+"Show Zigzag",true
+"Fib Factor for breakout confirmation",0.165
+"Text Size","tiny"
+"Delete Old/Broken Boxes",true
+"Long Stop Loss Percentage Below OB",0.02
+"Short Stop Loss Percentage Above OB",0.0225
+"Long Take Profit Percentage Below OB",0
+"Short Take Profits Percentage Above OB",0
+"Dashboard Size","Small"
+"Performance Summary",true
+"Monthly Performance",true

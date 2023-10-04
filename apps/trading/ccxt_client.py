@@ -51,7 +51,7 @@ class TradingModule:
             })
 
             # Activates testnet mode
-            exchange.set_sandbox_mode(sandbox_mode)
+            # exchange.set_sandbox_mode(sandbox_mode)
 
             self.exchanges[exchange_id] = exchange
     """

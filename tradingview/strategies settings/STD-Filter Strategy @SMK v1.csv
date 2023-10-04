@@ -1,0 +1,90 @@
+Name,Value
+"__indicatorName","STD-Filter Strategy @SMK"
+"Loopback Period",50
+"Min Consolidation Length",20
+"Paint Consolidation Area",true
+"ATR Period",110
+"Source","hl2"
+"ATR Multiplier",4
+"Change ATR Calculation Method ?",true
+"Show Buy/Sell Signals ?",true
+"Highlighter On/Off ?",true
+"Timezones: Src","Exchange"
+"-> Dst","Exchange"
+"Srart From ",true
+"End To       ",false
+"Select Session Days",false
+"Mon",true
+"Tue",true
+"Wed",true
+"Thu",true
+"Fri",true
+"Sat",false
+"Sun",false
+"Session Start",false
+":",0
+"Session End ",false
+"1. ADX",false
+"2. MACD",false
+"3. Bar direction=Trade direction",false
+"4. Rising Volume",false
+"5. Rising/Falling MA",false
+"Length",50
+"Bars",1
+"6. High/Low Filter",false
+"Lookback",10
+"7. Maximum close change (％) allowed on entry",false
+"8. Minimum close change (％) allowed on entry",false
+"9. RSI OS/OB",true
+"10. MA",false
+"11. EMA Difference",false
+"Take Profit Type","R:R"
+"Stop Loss Type","ATR"
+" Profit ％    ",4.5
+" Stop ％  ",1.5
+" Profit ＄    ",333
+" Stop ＄  ",100
+" ATR Period  ",40
+" Multiplier",4
+" Trailing ％  ",3
+" R:R    1:",1.85
+"Fixed RR",true
+" HH / LL   ",200
+"  LO / HI ",4
+"Add ％",false
+" MA Stop","WMA"
+" Len",15
+" Step",1.5
+" 𝐄𝐱𝐭𝐞𝐫𝐧𝐚𝐥 𝐒𝐨𝐮𝐫𝐜𝐞  ","close"
+" Long Deals    ",true
+" Short Deals",true
+" Wait End Deal ",true
+" Reverse Deals",false
+" ReEntry Deal  ",false
+" ReOpen Deal",false
+"Loss Streak   ",15
+"Win Streak   ",15
+"Row Loss InDay",3
+"DrawDown ％",10
+"InDay Loss ％ ",3
+"Daily Trades  ",10
+"Weekly Trades",50
+"     Order Size","SIZE"
+"Use Net Profit",true
+"​🇪​​🇶​​🇺​​🇮​​🇹​​🇾​",10
+"​🇸​​🇮​​🇿​​🇪",10000
+"​🇨​​🇴​​🇳​​🇹​​🇷​​🇦​​🇨​​🇹​​🇸​",1
+"Take Profit LV 1",false
+"﻿",30
+"Take Profit LV 2",false
+"Take Profit LV 3",false
+"Take Profit LV 4",false
+"Take Profit LV 5",false
+"Stop Loss",false
+"𝐓𝐈𝐏 𝐅𝐨𝐫 𝐓𝐏","——⤴—⤴—⤴"
+" SL 0 Position",3
+"Breakeven on TP",3
+" CoolDown # Bars",0
+"Dashboard Size","Small"
+"Performance Summary",true
+"Monthly Performance",true

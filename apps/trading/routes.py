@@ -23,7 +23,7 @@ def create_order():
             payload = request.get_json()
             exchange_id = payload['exchange'].lower()
             subaccount = payload.get('subaccount')
-            sandbox_mode = payload.get('sandbox_mode')
+            sandbox_mode = bool(payload.get('sandbox_mode'))
 
             trading_module.setup_exchanges(subaccount=subaccount,sandbox_mode=sandbox_mode)
 

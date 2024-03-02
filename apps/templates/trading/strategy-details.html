@@ -1,0 +1,714 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard2 {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed {% endblock body_class %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- overlayScrollbars -->
+  <link rel="stylesheet" href="/static/assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}  
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">Dashboard v2</h1>
+          </div><!-- /.col -->
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Dashboard v2</li>
+            </ol>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        
+        <div class="row">
+
+          <!-- Left col -->
+          <div class="col-md-9">
+
+            <div class="card card-primary card-tabs">
+              <div class="card-header p-0 pt-1">
+                <ul class="nav nav-tabs" id="custom-tabs-one-tab" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="custom-tabs-one-home-tab" data-toggle="pill" href="#custom-tabs-one-home" role="tab" aria-controls="custom-tabs-one-home" aria-selected="true">Forward Testing</a>
+                  </li>
+                  <!-- <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-one-profile-tab" data-toggle="pill" href="#custom-tabs-one-profile" role="tab" aria-controls="custom-tabs-one-profile" aria-selected="false">List of Trades</a>
+                  </li> -->
+                  <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-one-messages-tab" data-toggle="pill" href="#custom-tabs-one-messages" role="tab" aria-controls="custom-tabs-one-messages" aria-selected="false">Backtest Performance Summary</a>
+                  </li>
+                  <!-- <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-one-settings-tab" data-toggle="pill" href="#custom-tabs-one-settings" role="tab" aria-controls="custom-tabs-one-settings" aria-selected="false">Settings</a>
+                  </li> -->
+                </ul>
+              </div>
+              <div class="card-body">
+                <div class="tab-content" id="custom-tabs-one-tabContent">
+                  <div class="tab-pane fade show active" id="custom-tabs-one-home" role="tabpanel" aria-labelledby="custom-tabs-one-home-tab">
+                    
+                    <!-- Custom tabs (Charts with tabs)-->
+                    <div class="card">
+                      <div class="card-header">
+                        <h3 class="card-title">
+                          <i class="fas fa-chart-pie mr-1"></i>
+                          PNL
+                        </h3>
+                        <div class="card-tools">
+                          <!-- <ul class="nav nav-pills ml-auto">
+                            <li class="nav-item">
+                              <a class="nav-link active" onclick="toggleChart('profit')" href="#revenue-chart" data-toggle="tab">Bar</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link" onclick="toggleChart('equityCurve')" href="#sales-chart" data-toggle="tab">Line</a>
+                            </li>
+                          </ul> -->
+                        </div>
+                      </div><!-- /.card-header -->
+                      <div class="card-body">
+                        <div class="tab-content p-0">
+                          <!-- Morris chart - Sales -->
+                          <!-- <div class="chart tab-pane active" id="revenue-chart"
+                                style="position: relative; height: 300px;">
+                              <canvas id="profitChart" height="300" style="height: 300px;"></canvas>
+                            </div>
+                          <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;">
+                            <canvas id="equityCurveChart" height="300" style="height: 300px;"></canvas>
+                          </div> -->
+                          <div class="chart-container" style="position: relative; height:40vh;">
+                            <canvas id="comboChart"></canvas>
+                        </div>
+                        </div>
+                      </div><!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                    
+                    <div class="card">
+                      <div class="card-header">
+                          <h3 class="card-title">Orders Summary</h3>
+                      </div>
+                      <!-- /.card-header -->
+                      <div class="card-body">
+                          <div class="table-responsive">
+                              <table class="table m-0">
+                                  <thead>
+                                      <tr>
+                                          <th>Order ID</th>
+                                          <th>Type</th>
+                                          <th>Entry Date/Time</th>
+                                          <th>Entry Price</th>
+                                          <th>Contracts</th>
+                                          <th>Exit Date/Time</th>
+                                          <th>Exit Price</th>
+                                          <th>Profit</th>
+                                          <th>Cum. Profit</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      {% for order in orders %}
+                                      <tr class="{{ 'table-success' if order.profit and order.profit > 0 else 'table-danger' }}">
+                                          <td>{{ order.id }}</td>
+                                          <td>{{ order.market_pos }}</td>
+                                          <td>{{ order.entry_time }}</td>
+                                          <td>{{ order.entry_price }}</td>
+                                          <td>{{ order.size }}</td>
+                                          <td>{{ order.exit_time }}</td>
+                                          <td>{{ order.exit_price | default('N/A') }}</td>
+                                          <td>
+                                              {{ order.profit | default('0') }} USDT
+                                              <br>
+                                              <small class="text-muted">{{ order.percentage_profit | default('0') }}%</small>
+                                          </td>
+                                          <td>
+                                              {{ order.cumulative_profit | default('0') }} USDT
+                                              <br>
+                                              <small class="text-muted">{{ order.cumulative_percentage_profit | default('0') }}%</small>
+                                          </td>
+                                      </tr>
+                                      {% endfor %}
+                                  </tbody>
+                              </table>
+                          </div>
+                          <!-- /.table-responsive -->
+                      </div>
+                      <!-- /.card-body -->
+                      <div class="card-footer">
+                          <div class="float-right">
+                              <!-- Optionally place controls like buttons here -->
+                          </div>
+                      </div>
+                      <!-- /.card-footer -->
+                    </div>
+                  
+
+                  </div>
+                  <div class="tab-pane fade" id="custom-tabs-one-profile" role="tabpanel" aria-labelledby="custom-tabs-one-profile-tab">
+                    <div class="table-responsive">
+                      <table class="table m-0">
+                        <thead>
+                          <tr>
+                            <th>Trade #</th>
+                            <th>Type</th>
+                            <th>Signal</th>
+                            <th>Date/Time</th>
+                            <th>Price</th>
+                            <th>Contracts</th>
+                            <th>Profit</th>
+                            <th>Cum. Profit</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for trade in trades %}
+                          <tr class="{{ 'table-success' if 'USDT' in trade.profit and not '-' in trade.profit else 'table-danger' }}">
+                            <td>{{ trade.trade_number }}</td>
+                            <td>{{ trade.type }}</td>
+                            <td>{{ trade.signal }}</td>
+                            <td>{{ trade.date_time }}</td>
+                            <td>{{ trade.price }}</td>
+                            <td>{{ trade.contracts }}</td>
+                            <td>
+                              {{ trade.profit }}
+                              <small class="text-muted">{{ trade.profit_percent }}</small>
+                            </td>
+                            <td>{{ trade.cum_profit }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="custom-tabs-one-messages" role="tabpanel" aria-labelledby="custom-tabs-one-messages-tab">
+                    <div class="table-responsive">
+                      <!-- <table class="table m-0">
+                        <thead>
+                          <tr>
+                            <th>Title</th>
+                            <th>All</th>
+                            <th>Long</th>
+                            <th>Short</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for key, value in data.items() %}
+                          {% if key not in ['id', 'coin_pair', 'comment', 'strategy_name', 'creation_date', 'updated_date', 'time_frame'] %}
+                          {% if key.endswith('_all') %}
+                          {% set measure = key[:-4] %}
+                          {% set percent_key_all = measure + '_percent_all' %}
+                          {% set percent_key_long = measure + '_percent_long' %}
+                          {% set percent_key_short = measure + '_percent_short' %}
+                          <tr>
+                            <td>{{ measure.replace('_', ' ').title() }}</td>
+                            <td>
+                              {{ format_value(key, value) }}
+                              {% if percent_key_all in data %}
+                              <br>
+                              <small class="text-muted">{{ format_value(percent_key_all, data[percent_key_all]) }}</small>
+                              {% endif %}
+                            </td>
+                            <td>
+                              {% if measure + '_long' in data %}
+                              {{ format_value(measure + '_long', data[measure + '_long']) }}
+                              {% if percent_key_long in data %}
+                              <br>
+                              <small class="text-muted">{{ format_value(percent_key_long, data[percent_key_long]) }}</small>
+                              {% endif %}
+                              {% else %}
+                              N/A
+                              {% endif %}
+                            </td>
+                            <td>
+                              {% if measure + '_short' in data %}
+                              {{ format_value(measure + '_short', data[measure + '_short']) }}
+                              {% if percent_key_short in data %}
+                              <br>
+                              <small class="text-muted">{{ format_value(percent_key_short, data[percent_key_short]) }}</small>
+                              {% endif %}
+                              {% else %}
+                              N/A
+                              {% endif %}
+                            </td>
+                          </tr>
+                          {% elif not key.endswith(('_long', '_short', '_percent')) %}
+                          {% if not key + '_percent_all' in data and not key + '_percent_long' in data and not key + '_percent_short' in data %}
+                          <tr>
+                            <td>{{ key.replace('_', ' ').title() }}</td>
+                            <td>
+                              {{ format_value(key, value) }}
+                            </td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                          </tr>
+                          {% endif %}
+                          {% endif %}
+                          {% endif %}
+                          {% endfor %}
+                        </tbody>
+                      </table> -->
+    
+                      <table class="table m-0">
+                        <thead>
+                          <tr>
+                            <th>Title</th>
+                            <th>All</th>
+                            <th>Long</th>
+                            <th>Short</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for key, value in data.items() %}
+                          {% if key not in ['id', 'coin_pair', 'comment', 'strategy_name', 'creation_date', 'updated_date', 'time_frame'] %}
+                          {% if key.endswith('_all') and not key.endswith('_percent_all') %}
+                          {% set measure = key[:-4] %}
+                          {% set percent_key_all = measure + '_percent_all' %}
+                          {% set percent_key_long = measure + '_percent_long' %}
+                          {% set percent_key_short = measure + '_percent_short' %}
+                          <tr>
+                            <td>{{ measure.replace('_', ' ').title() }}</td>
+                            <td>
+                              {{ format_value(key, value) }}
+                              {% if percent_key_all in data %}
+                              <br>
+                              <small class="text-muted">{{ format_value(percent_key_all, data[percent_key_all]) }}</small>
+                              {% endif %}
+                            </td>
+                            <td>
+                              {{ format_value(measure + '_long', data.get(measure + '_long', 'N/A')) }}
+                              {% if percent_key_long in data %}
+                              <br>
+                              <small class="text-muted">{{ format_value(percent_key_long, data[percent_key_long]) }}</small>
+                              {% endif %}
+                            </td>
+                            <td>
+                              {{ format_value(measure + '_short', data.get(measure + '_short', 'N/A')) }}
+                              {% if percent_key_short in data %}
+                              <br>
+                              <small class="text-muted">{{ format_value(percent_key_short, data[percent_key_short]) }}</small>
+                              {% endif %}
+                            </td>
+                          </tr>
+                          {% endif %}
+                          {% endif %}
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                      
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="custom-tabs-one-settings" role="tabpanel" aria-labelledby="custom-tabs-one-settings-tab">
+                     Pellentesque vestibulum commodo nibh nec blandit. Maecenas neque magna, iaculis tempus turpis ac, ornare sodales tellus. Mauris eget blandit dolor. Quisque tincidunt venenatis vulputate. Morbi euismod molestie tristique. Vestibulum consectetur dolor a vestibulum pharetra. Donec interdum placerat urna nec pharetra. Etiam eget dapibus orci, eget aliquet urna. Nunc at consequat diam. Nunc et felis ut nisl commodo dignissim. In hac habitasse platea dictumst. Praesent imperdiet accumsan ex sit amet facilisis.
+                  </div>
+                </div>
+              </div>
+              <!-- /.card -->
+            </div>
+      
+          </div>
+          <!-- /.col -->
+
+          <div class="col-md-3">
+            <!-- Info Boxes Style 2 -->
+            <div class="info-box mb-3 bg-warning">
+              <span class="info-box-icon"><i class="fas fa-tag"></i></span>
+
+              <div class="info-box-content">
+                <span class="info-box-text">Inventory</span>
+                <span class="info-box-number">5,200</span>
+              </div>
+              <!-- /.info-box-content -->
+            </div>
+            <!-- /.info-box -->
+            <div class="info-box mb-3 bg-success">
+              <span class="info-box-icon"><i class="far fa-heart"></i></span>
+
+              <div class="info-box-content">
+                <span class="info-box-text">Mentions</span>
+                <span class="info-box-number">92,050</span>
+              </div>
+              <!-- /.info-box-content -->
+            </div>
+            <!-- /.info-box -->
+            <div class="info-box mb-3 bg-danger">
+              <span class="info-box-icon"><i class="fas fa-cloud-download-alt"></i></span>
+
+              <div class="info-box-content">
+                <span class="info-box-text">Downloads</span>
+                <span class="info-box-number">114,381</span>
+              </div>
+              <!-- /.info-box-content -->
+            </div>
+            <!-- /.info-box -->
+            <div class="info-box mb-3 bg-info">
+              <span class="info-box-icon"><i class="far fa-comment"></i></span>
+
+              <div class="info-box-content">
+                <span class="info-box-text">Direct Messages</span>
+                <span class="info-box-number">163,921</span>
+              </div>
+              <!-- /.info-box-content -->
+            </div>
+            <!-- /.info-box -->
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Browser Usage</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-8">
+                    <div class="chart-responsive">
+                      <canvas id="pieChart" height="150"></canvas>
+                    </div>
+                    <!-- ./chart-responsive -->
+                  </div>
+                  <!-- /.col -->
+                  <div class="col-md-4">
+                    <ul class="chart-legend clearfix">
+                      <li><i class="far fa-circle text-danger"></i> Chrome</li>
+                      <li><i class="far fa-circle text-success"></i> IE</li>
+                      <li><i class="far fa-circle text-warning"></i> FireFox</li>
+                      <li><i class="far fa-circle text-info"></i> Safari</li>
+                      <li><i class="far fa-circle text-primary"></i> Opera</li>
+                      <li><i class="far fa-circle text-secondary"></i> Navigator</li>
+                    </ul>
+                  </div>
+                  <!-- /.col -->
+                </div>
+                <!-- /.row -->
+              </div>
+              <!-- /.card-body -->
+              <div class="card-footer bg-white p-0">
+                <ul class="nav nav-pills flex-column">
+                  <li class="nav-item">
+                    <a href="#" class="nav-link">
+                      United States of America
+                      <span class="float-right text-danger">
+                        <i class="fas fa-arrow-down text-sm"></i>
+                        12%</span>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="#" class="nav-link">
+                      India
+                      <span class="float-right text-success">
+                        <i class="fas fa-arrow-up text-sm"></i> 4%
+                      </span>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="#" class="nav-link">
+                      China
+                      <span class="float-right text-warning">
+                        <i class="fas fa-arrow-left text-sm"></i> 0%
+                      </span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <!-- /.footer -->
+            </div>
+            <!-- /.card -->
+
+            <!-- PRODUCT LIST -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Recently Added Products</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body p-0">
+                <ul class="products-list product-list-in-card pl-2 pr-2">
+                  <li class="item">
+                    <div class="product-img">
+                      <img src="/static/assets/img/default-150x150.png" alt="Product Image" class="img-size-50">
+                    </div>
+                    <div class="product-info">
+                      <a href="javascript:void(0)" class="product-title">Samsung TV
+                        <span class="badge badge-warning float-right">$1800</span></a>
+                      <span class="product-description">
+                        Samsung 32" 1080p 60Hz LED Smart HDTV.
+                      </span>
+                    </div>
+                  </li>
+                  <!-- /.item -->
+                  <li class="item">
+                    <div class="product-img">
+                      <img src="/static/assets/img/default-150x150.png" alt="Product Image" class="img-size-50">
+                    </div>
+                    <div class="product-info">
+                      <a href="javascript:void(0)" class="product-title">Bicycle
+                        <span class="badge badge-info float-right">$700</span></a>
+                      <span class="product-description">
+                        26" Mongoose Dolomite Men's 7-speed, Navy Blue.
+                      </span>
+                    </div>
+                  </li>
+                  <!-- /.item -->
+                  <li class="item">
+                    <div class="product-img">
+                      <img src="/static/assets/img/default-150x150.png" alt="Product Image" class="img-size-50">
+                    </div>
+                    <div class="product-info">
+                      <a href="javascript:void(0)" class="product-title">
+                        Xbox One <span class="badge badge-danger float-right">
+                        $350
+                      </span>
+                      </a>
+                      <span class="product-description">
+                        Xbox One Console Bundle with Halo Master Chief Collection.
+                      </span>
+                    </div>
+                  </li>
+                  <!-- /.item -->
+                  <li class="item">
+                    <div class="product-img">
+                      <img src="/static/assets/img/default-150x150.png" alt="Product Image" class="img-size-50">
+                    </div>
+                    <div class="product-info">
+                      <a href="javascript:void(0)" class="product-title">PlayStation 4
+                        <span class="badge badge-success float-right">$399</span></a>
+                      <span class="product-description">
+                        PlayStation 4 500GB Console (PS4)
+                      </span>
+                    </div>
+                  </li>
+                  <!-- /.item -->
+                </ul>
+              </div>
+              <!-- /.card-body -->
+              <div class="card-footer text-center">
+                <a href="javascript:void(0)" class="uppercase">View All Products</a>
+              </div>
+              <!-- /.card-footer -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+
+        
+
+        <!-- Main row -->
+        <div class="row">
+          <!-- Left col -->
+          <div class="col-md-9">
+            <!-- MAP & BOX PANE -->
+            
+            <!-- /.row -->
+
+            
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+
+          
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div><!--/. container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  <!-- REQUIRED SCRIPTS -->
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- overlayScrollbars -->
+  <script src="/static/assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.js"></script>
+
+  <!-- OPTIONAL SCRIPTS -->
+  <script src="/static/assets/js/demo.js"></script>
+
+  <!-- PAGE PLUGINS -->
+  <!-- jQuery Mapael -->
+  <script src="/static/assets/plugins/jquery-mousewheel/jquery.mousewheel.js"></script>
+  <script src="/static/assets/plugins/raphael/raphael.min.js"></script>
+  <script src="/static/assets/plugins/jquery-mapael/jquery.mapael.min.js"></script>
+  <script src="/static/assets/plugins/jquery-mapael/maps/usa_states.min.js"></script>
+  <!-- ChartJS -->
+  <script src="/static/assets/plugins/chart.js/Chart.min.js"></script>
+
+  <!-- PAGE SCRIPTS -->
+  <script src="/static/assets/js/pages/dashboard2.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    // JavaScript to trigger the file input when the 'Upload Equity Curve' link is clicked
+    document.getElementById('uploadEquityCurveLink').addEventListener('click', function() {
+      document.getElementById('equityCurveInput').click();
+    });
+  
+    // Function to handle the file upload and display the image
+    function handleFileUpload(input) {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('equityCurveImage').src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+  </script>
+
+  <!-- Chart.js Script for Rendering Charts -->
+<script>
+  // Prepare the data
+  var orderDates = {{ order_dates | safe }};
+  var profits = {{ profits | safe }};
+  var cumulativeProfits = {{ cumulative_profits | safe }};
+
+  // Profit Bar Chart
+  var ctx = document.getElementById('profitChart').getContext('2d');
+  var profitChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+          labels: orderDates,
+          datasets: [{
+              label: 'Order Profit',
+              data: profits,
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: {
+          scales: {
+              y: {
+                  beginAtZero: true
+              }
+          }
+      }
+  });
+
+  // Equity Curve Line Chart
+  var ctxCurve = document.getElementById('equityCurveChart').getContext('2d');
+  var equityCurveChart = new Chart(ctxCurve, {
+      type: 'line',
+      data: {
+          labels: orderDates,
+          datasets: [{
+              label: 'Cumulative Profit',
+              data: cumulativeProfits,
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 1,
+              fill: false,
+          }]
+      },
+      options: {
+          scales: {
+              y: {
+                  beginAtZero: true
+              }
+          }
+      }
+  });
+
+  // Function to toggle between charts
+  function toggleChart(chartToShow) {
+      if (chartToShow === 'equityCurve') {
+          document.getElementById('profitChart').style.display = 'none';
+          document.getElementById('equityCurveChart').style.display = 'block';
+      } else {
+          document.getElementById('profitChart').style.display = 'block';
+          document.getElementById('equityCurveChart').style.display = 'none';
+      }
+  }
+</script>
+
+<script>
+  var labels = {{ order_dates | tojson | safe }};
+  var profitData = {{ profits | tojson | safe }};
+  var cumulativeProfitData = {{ cumulative_profits | tojson | safe }};
+
+  var ctx = document.getElementById('comboChart').getContext('2d');
+  var comboChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+          labels: labels,
+          datasets: [{
+              label: 'Profit/Loss',
+              type: 'bar',
+              data: profitData,
+              backgroundColor: profitData.map(data => data >= 0 ? 'rgba(40, 235, 95, 0.2)' : 'rgba(255, 99, 132, 0.2)'),
+              borderColor: profitData.map(data => data >= 0 ? 'rgba(40, 235, 95, 1)' : 'rgba(255, 99, 132, 1)'),
+              borderWidth: 1
+          }, {
+              label: 'Cumulative Profit',
+              type: 'line',
+              data: cumulativeProfitData,
+              borderColor: 'rgb(245, 180, 6)',
+              borderWidth: 2,
+              fill: false
+          }]
+      },
+      options: {
+          responsive: true,  // This will make the chart responsive
+          maintainAspectRatio: false,  // This will prevent the chart from trying to maintain an initial aspect ratio
+          scales: {
+              yAxes: [{
+                  ticks: {
+                      beginAtZero: true
+                  }
+              }]
+          },
+          tooltips: {
+              mode: 'index',
+              intersect: false
+          }
+      }
+  });
+</script>
+
+{% endblock javascripts %}

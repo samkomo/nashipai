@@ -1,0 +1,65 @@
+.
+├── CHANGELOG.md
+├── Dockerfile
+├── LICENSE.md
+├── Procfile
+├── README.md
+├── apps
+│   ├── __init__.py
+│   ├── authentication
+│   ├── flask-adminlte-master.code-workspace
+│   ├── home
+│   ├── static
+│   ├── templates
+│   └── trading
+├── build.sh
+├── deployer.json
+├── design
+│   ├── binance_alert.jpg
+│   ├── brokers.jpg
+│   ├── create_account.jpg
+│   ├── mt_trades.jpg
+│   ├── setup1.jpg
+│   ├── setup2.jpg
+│   ├── setup3.jpg
+│   └── setup4.jpg
+├── docker-compose.yml
+├── env.sample
+├── gunicorn-cfg.py
+├── media
+│   ├── flask-dashboard-adminlte-card-low.jpg
+│   ├── flask-dashboard-adminlte-card-low.png
+│   ├── flask-dashboard-adminlte-card.jpg
+│   ├── flask-dashboard-adminlte-card.png
+│   ├── flask-dashboard-adminlte-content-image-low.png
+│   ├── flask-dashboard-adminlte-content-image.png
+│   ├── flask-dashboard-adminlte-screen-1-low.png
+│   ├── flask-dashboard-adminlte-screen-1.png
+│   ├── flask-dashboard-adminlte-screen-2-low.png
+│   ├── flask-dashboard-adminlte-screen-2.png
+│   ├── flask-dashboard-adminlte-screen-3-low.png
+│   ├── flask-dashboard-adminlte-screen-3.png
+│   ├── flask-dashboard-adminlte-screen-4-low.png
+│   ├── flask-dashboard-adminlte-screen-4.png
+│   ├── flask-dashboard-adminlte-screen-login-low.png
+│   ├── flask-dashboard-adminlte-screen-login.png
+│   ├── flask-dashboard-adminlte-screen-low.png
+│   ├── flask-dashboard-adminlte-screen-register-low.png
+│   ├── flask-dashboard-adminlte-screen-register.png
+│   └── flask-dashboard-adminlte-screen.png
+├── nginx
+│   └── appseed-app.conf
+├── package.json
+├── rebuttal.md
+├── render.yaml
+├── requirements.txt
+├── run.py
+├── static
+│   └── assets
+├── tradingview
+│   ├── indicators
+│   ├── strategies
+│   └── strategies settings
+└── tree_structure.txt
+
+16 directories, 47 files

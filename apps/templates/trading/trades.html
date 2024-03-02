@@ -48,8 +48,8 @@
           <table class="table" id="trades-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Date</th>
+                <th>Order ID</th>
                 <th>Exchange</th>
                 <th>Strategy</th>
                 <th>Ticker</th>
@@ -58,23 +58,24 @@
                 <th>Size</th>
                 <th>Price</th>
                 <th>Position</th>
-                <th>Response</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {% for trade in trades %}
               <tr>
-                <td>{{ trade.id }}</td>
                 <td>{{ trade.time }}</td>
+                <td>{{ trade.order_id }}</td>
                 <td>{{ trade.exchange_id }}</td>
                 <td>{{ trade.strategy }}</td>
                 <td>{{ trade.symbol }}</td>
                 <td>{{ trade.type }}</td>
                 <td>{{ trade.side }}</td>
                 <td>{{ trade.size }}</td>
-                <td>{{ trade.price }}</td>
+                <td>{{ trade.entry_price }}</td>
                 <td>{{ trade.market_pos }}</td>
-                <td>
+                <td>{{ trade.status }}</td>
+                <!-- <td>
                   {% if trade.status == 'Posted' %}
                     <span class="badge badge-info">Posted</span>
                   {% elif trade.status == 'Error' %}
@@ -82,11 +83,13 @@
                   {% elif trade.status == 'Filled' %}
                     <span class="badge badge-success">Filled</span>
                   {% endif %}
-                </td>
+                </td> -->
                 <td class="text-right py-0 align-middle">
                   <div class="btn-group btn-group-sm">
                     <a href="#" class="btn btn-info"><i class="fas fa-eye"></i></a>
                     <button class="btn btn-danger delete-btn" data-id="{{ trade.id }}"><i class="fas fa-trash"></i></button>
+                    <a href="#" class="btn btn-info get-order-btn" data-order-id="{{ trade.order_id }}"><i class="fas fa-search"></i></a>
+
                   </div>
                 </td>
               </tr>
@@ -121,57 +124,94 @@
   </script>
 
   <script>
-    function updateTradesTable() {
-      $.ajax({
-        url: '/trading/trades',  // Replace this with the URL of your endpoint to fetch trades data
-        method: 'GET',
-        dataType: 'json',
-        success: function(data) {
-          // Clear the existing table content
-          $('#trades-table tbody').empty();
+    // function updateTradesTable() {
+    //   $.ajax({
+    //     url: '/trading/trades',  // Replace this with the URL of your endpoint to fetch trades data
+    //     method: 'GET',
+    //     dataType: 'json',
+    //     success: function(data) {
+    //       // Clear the existing table content
+    //       $('#trades-table tbody').empty();
           
-          // Iterate through the data and update the table
-          for (var i = 0; i < data.length; i++) {
-            var trade = data[i];
-            var statusBadge = '';
+    //       // Iterate through the data and update the table
+    //       for (var i = 0; i < data.length; i++) {
+    //         var trade = data[i];
+    //         var statusBadge = '';
 
-            // Render the status badge using the Jinja template
-            if (trade.status) {
-              var template = $('#status-badge-template').html();
-              statusBadge = nunjucks.renderString(template, {status: trade.status});
+    //         // Render the status badge using the Jinja template
+    //         if (trade.status) {
+    //           var template = $('#status-badge-template').html();
+    //           statusBadge = nunjucks.renderString(template, {status: trade.status});
+    //         }
+
+    //         var row = '<tr>' +
+    //                   '<td>' + trade.id + '</td>' +
+    //                   '<td>' + trade.time + '</td>' +
+    //                   '<td>' + trade.exchange_id + '</td>' +
+    //                   '<td>' + trade.strategy + '</td>' +
+    //                   '<td>' + trade.symbol + '</td>' +
+    //                   '<td>' + trade.type + '</td>' +
+    //                   '<td>' + trade.side + '</td>' +
+    //                   '<td>' + trade.size + '</td>' +
+    //                   '<td>' + trade.price + '</td>' +
+    //                   '<td>' + trade.market_pos + '</td>' +
+    //                   '<td>' + statusBadge + '</td>' +
+    //                   '<td class="text-right py-0 align-middle">' +
+    //                     '<div class="btn-group btn-group-sm">' +
+    //                       '<a href="#" class="btn btn-info"><i class="fas fa-eye"></i></a>' +
+    //                       '<button class="btn btn-danger delete-btn" data-id="' + trade.id + '"><i class="fas fa-trash"></i></button>' +
+    //                     '</div>' +
+    //                   '</td>' +
+    //                   '</tr>';
+    //         $('#trades-table tbody').append(row);
+    //       }
+    //     },
+    //     error: function(error) {
+    //       console.log('Error fetching trades data:', error);
+    //     }
+    //   });
+    // }
+
+    function updateTradesTable() {
+        $.ajax({
+            url: '/trading/trades',  // Make sure this endpoint returns the latest list of trades
+            method: 'GET',
+            dataType: 'json',
+            success: function(trades) {
+              window.location.reload();
+
+                var tbody = $('#trades-table tbody');
+                tbody.empty();  // Clear existing table content
+
+                trades.forEach(function(trade) {
+                    var row = $('<tr>');
+                    row.append($('<td>').text(trade.time));
+                    row.append($('<td>').text(trade.order_id));
+                    // ... append other trade details ...
+
+                    // Append the get order button
+                    var getOrderBtn = $('<a>').addClass('btn btn-info get-order-btn')
+                                              .attr('href', '#')
+                                              .attr('data-order-id', trade.order_id)
+                                              .append($('<i>').addClass('fas fa-search'));
+                    row.append($('<td>').append(getOrderBtn));
+
+                    // Append the row to the table body
+                    tbody.append(row);
+                });
+            },
+            error: function(error) {
+                console.error('Error fetching trades data:', error);
             }
-
-            var row = '<tr>' +
-                      '<td>' + trade.id + '</td>' +
-                      '<td>' + trade.time + '</td>' +
-                      '<td>' + trade.exchange_id + '</td>' +
-                      '<td>' + trade.strategy + '</td>' +
-                      '<td>' + trade.symbol + '</td>' +
-                      '<td>' + trade.type + '</td>' +
-                      '<td>' + trade.side + '</td>' +
-                      '<td>' + trade.size + '</td>' +
-                      '<td>' + trade.price + '</td>' +
-                      '<td>' + trade.market_pos + '</td>' +
-                      '<td>' + statusBadge + '</td>' +
-                      '<td class="text-right py-0 align-middle">' +
-                        '<div class="btn-group btn-group-sm">' +
-                          '<a href="#" class="btn btn-info"><i class="fas fa-eye"></i></a>' +
-                          '<button class="btn btn-danger delete-btn" data-id="' + trade.id + '"><i class="fas fa-trash"></i></button>' +
-                        '</div>' +
-                      '</td>' +
-                      '</tr>';
-            $('#trades-table tbody').append(row);
-          }
-        },
-        error: function(error) {
-          console.log('Error fetching trades data:', error);
-        }
-      });
+        });
     }
+
 
     // Call the updateTradesTable function immediately and every 1 minute
     $(document).ready(function() {
       updateTradesTable();
+      // window.location.reload();
+
       setInterval(updateTradesTable, 60000); // 1 minute = 60,000 milliseconds
     });
 
@@ -190,6 +230,29 @@
           error: function(error) {
             console.error('Error deleting orders:', error);
           }
+        });
+      });
+
+      $(document).on('click', '.get-order-btn', function() {
+        var orderId = $(this).data('order-id');
+
+        // Make an AJAX call to the get-order endpoint
+        $.ajax({
+            url: '/trading/get-order/' + orderId,
+            method: 'GET',
+            headers: {
+                'X-API-KEY': 'i2LhWiXaxDFUMp78eI',  // Replace with actual API key
+                'X-API-SECRET': 'p0eMbFSDJiBpL3vtxSvxKqvs9zzMNrgqYjKk'  // Replace with actual API secret
+            },
+            success: function(response) {
+                console.log('Successful:',response);  // Handle the response
+                // You can update the UI here based on the response
+                window.location.reload();
+                updateTradesTable();
+            },
+            error: function(error) {
+                console.error('Error fetching order:', error);
+            }
         });
       });
 

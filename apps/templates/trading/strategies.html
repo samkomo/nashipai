@@ -1,0 +1,197 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Strategies {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Strategies</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Strategies</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Strategy Overview</h3>
+          <div class="card-tools">
+            <!-- Here you can add controls like collapse or remove -->
+            <a href="#"  class="btn btn-tool btn-sm" id="uploadSettings">
+
+                <i class="fas fa-plus-square"></i>
+              </a>
+              <input type="file" id="fileInput" style="display: none;" onchange="uploadFile(this.files)">
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover m-0">
+              <thead>
+                <tr>
+                  <th>Strategy Name</th>
+                  <th>Coin Pair</th>
+                  <th>Timeframe</th>
+                  <th>Net Profit</th>
+                  <th>Max Drawdown</th>
+                  <th>Status</th>
+                  <th>Win Rate</th>
+                  
+                  <!-- <th>Equity Curve</th> -->
+                  <!-- Add more headers if needed -->
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Use Jinja2 templating to loop through the trades and populate the table -->
+                {% for trade in trades %}
+                <tr class="clickable-row" data-id="{{ trade.id }}">
+                  <td>
+                    <a class="text-info" style="font-weight: bold;">
+                      {{ trade.strategy_name }}
+                    </a>
+                    <br/>
+                    <small>
+                      Created: {{ trade.creation_date }} <!-- Adjust the attribute name as needed -->
+                    </small>
+                  </td>
+                  <td>
+                    <!-- Display Coin Pair and include the relevant icon -->
+                    <!-- You might need to map the coin pair to the icon file name -->
+                    <img src="/static/assets/icons/{{ trade.coin_pair | lower }}@2x.png" alt="{{ trade.coin_pair }} Icon" style="height: 20px; margin-right: 5px;"> {{ trade.coin_pair }}
+                  </td>              
+                <td>{{ trade.time_frame }}</td>
+                <td>
+                  <a class="text-success">
+                    ${{ "%.2f"|format(trade.net_profit_all) }}
+                  </a>
+                  <br>
+                          <small class="text-success">{{ trade.net_profit_percent_all }}%</small>
+                </td>
+                <td>
+                    <a class="text-danger">
+                        ${{ "%.2f"|format(trade.max_drawdown) }}
+                    </a>
+                    <br>
+                          <small class="text-danger"> {{ trade.max_drawdown_percent }}%</small>
+                    </td> <!-- You will need to add logic to calculate ROI for the last 7 days -->
+                <td>
+                  {% if trade.status %}
+                    <span class="fas fa-circle text-success"></span>
+                  {% else %}
+                    <span class="fas fa-circle text-danger"></span>
+                  {% endif %}
+                </td>
+                <td class="project_progress">
+                  <span class="progress-text">{{ trade.percent_profitable_all }}% profitable</span>
+                  <!-- <span class="float-right">
+                    <span style="color: green;"><b>  {{ trade.number_winning_trades_all }} Wins</b></span>/<span style="color: red;"><b> {{ trade.number_losing_trades_all }} Losses</b></span>
+                </span> -->
+                  <div class="progress progress-sm">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ trade.percent_profitable_all }}%" aria-valuenow="{{ trade.percent_profitable_all }}" aria-valuemin="0" aria-valuemax="100">
+                      <!-- Optional: Win percentage label inside progress bar -->
+                      <span class="justify-content-center d-flex position-absolute w-100">{{ trade.percent_profitable }}% Wins</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="/static/assets/js/demo.js"></script>
+
+  <script>
+        document.getElementById('uploadSettings').addEventListener('click', function() {
+            document.getElementById('fileInput').click(); // Trigger file input click
+        });
+
+        function uploadFile(files) {
+            if (files.length === 0) {
+                return;
+            }
+            const file = files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Assuming you have an endpoint '/upload-settings' to handle the file upload
+            fetch('/trading/upload-settings', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // Refresh the page to update the table with the new data
+                window.location.reload();
+                // Handle response data, update UI accordingly
+                // Call the function to populate the table
+                // populateTable(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle errors here
+            });
+        }
+
+    </script>
+
+<script>
+    // When the DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add a click event listener to each clickable row
+      document.querySelectorAll('.clickable-row').forEach(function(row) {
+        row.addEventListener('click', function() {
+          var tradeId = this.dataset.id; // Get the trade ID from the data-id attribute
+          window.location.href = 'strategy-details/' + tradeId; // Redirect to the details page
+        });
+      });
+    });
+  </script>
+  
+{% endblock javascripts %}

@@ -1,4 +1,3 @@
-
 import os
 
 from flask import Flask
@@ -44,8 +43,9 @@ def configure_database(app):
         db.session.remove()
 
 
-def create_app():
+def create_app(config):
     app = Flask(__name__)
+    app.config.from_object(config)
     register_extensions(app)
     register_blueprints(app)
     configure_database(app)

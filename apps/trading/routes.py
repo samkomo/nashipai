@@ -231,7 +231,7 @@ async def fetch_orders_route():
 
 @blueprint.route('/trades', methods=['GET'])
 def get_trades():
-    orders = Order.query.order_by(Order.time.desc()).all()
+    orders = Order.query.order_by(Order.entry_time.desc()).all()
     orders_list = [order.to_dict() for order in orders]
     logger.info(f"Successfully fetched open orders for {orders}.")
 

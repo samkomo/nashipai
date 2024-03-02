@@ -64,7 +64,7 @@
             <tbody>
               {% for trade in trades %}
               <tr>
-                <td>{{ trade.time }}</td>
+                <td>{{ trade.entry_time }}</td>
                 <td>{{ trade.order_id }}</td>
                 <td>{{ trade.exchange_id }}</td>
                 <td>{{ trade.strategy }}</td>
@@ -146,7 +146,7 @@
 
     //         var row = '<tr>' +
     //                   '<td>' + trade.id + '</td>' +
-    //                   '<td>' + trade.time + '</td>' +
+    //                   '<td>' + trade.entry_time + '</td>' +
     //                   '<td>' + trade.exchange_id + '</td>' +
     //                   '<td>' + trade.strategy + '</td>' +
     //                   '<td>' + trade.symbol + '</td>' +
@@ -185,7 +185,7 @@
 
                 trades.forEach(function(trade) {
                     var row = $('<tr>');
-                    row.append($('<td>').text(trade.time));
+                    row.append($('<td>').text(trade.entry_time));
                     row.append($('<td>').text(trade.order_id));
                     // ... append other trade details ...
 

@@ -60,6 +60,7 @@
                   <th>Strategy Name</th>
                   <th>Coin Pair</th>
                   <th>Timeframe</th>
+                  <th># Trades</th>
                   <th>Net Profit</th>
                   <th>Max Drawdown</th>
                   <th>Status</th>
@@ -88,6 +89,7 @@
                     <img src="/static/assets/icons/{{ trade.coin_pair | lower }}@2x.png" alt="{{ trade.coin_pair }} Icon" style="height: 20px; margin-right: 5px;"> {{ trade.coin_pair }}
                   </td>              
                 <td>{{ trade.time_frame }}</td>
+                <td>{{ trade.orders|length }}</td>
                 <td>
                   <a class="text-success">
                     ${{ "%.2f"|format(trade.net_profit_all) }}

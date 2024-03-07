@@ -16,6 +16,23 @@
   <link rel="stylesheet" href="/static/assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <style>
+    pre {
+        background-color: #f4f4f4;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+    .copy-btn {
+        cursor: pointer;
+        padding: 5px 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+</style>
 
 {% endblock stylesheets %}
 
@@ -28,12 +45,12 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0 text-dark">Dashboard v2</h1>
+            <h1 class="m-0 text-dark">{{ data.strategy_name }}</h1>
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Dashboard v2</li>
+              <li class="breadcrumb-item"><a href="{{ url_for('trading_blueprint.get_strategies') }}">Strategies</a></li>
+              <li class="breadcrumb-item active">Strategy Details</li>
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -119,11 +136,11 @@
                                       <tr>
                                           <th>Order ID</th>
                                           <th>Type</th>
-                                          <th>Entry Date/Time</th>
-                                          <th>Entry Price</th>
+                                          <th>Date/Time</th>
+                                          <th>Price</th>
                                           <th>Contracts</th>
-                                          <th>Exit Date/Time</th>
-                                          <th>Exit Price</th>
+                                          <!-- <th>Exit Date/Time</th> -->
+                                          <!-- <th>Exit Price</th> -->
                                           <th>Profit</th>
                                           <th>Cum. Profit</th>
                                       </tr>
@@ -131,13 +148,22 @@
                                   <tbody>
                                       {% for order in orders %}
                                       <tr class="{{ 'table-success' if order.profit and order.profit > 0 else 'table-danger' }}">
-                                          <td>{{ order.id }}</td>
-                                          <td>{{ order.market_pos }}</td>
-                                          <td>{{ order.entry_time }}</td>
-                                          <td>{{ order.entry_price }}</td>
+                                        <td>{{ order.order_id[-8:] }}</td>
+                                        <td>
+                                            Exit {{ order.market_pos }} <br>
+                                            Entry {{ order.market_pos }}
+                                          </td>
+                                          <td>
+                                            {{ order.exit_time }} <br>
+                                            {{ order.entry_time }}
+                                          </td>
+                                          <td>
+                                            ${{ order.exit_price | default('N/A') }}<br>
+                                            ${{ order.entry_price | default('N/A') }}
+                                          </td>
                                           <td>{{ order.size }}</td>
-                                          <td>{{ order.exit_time }}</td>
-                                          <td>{{ order.exit_price | default('N/A') }}</td>
+                                          <!-- <td>{{ order.exit_time }}</td> -->
+                                          <!-- <td>{{ order.exit_price | default('N/A') }}</td> -->
                                           <td>
                                               {{ order.profit | default('0') }} USDT
                                               <br>
@@ -335,7 +361,7 @@
               <span class="info-box-icon"><i class="fas fa-tag"></i></span>
 
               <div class="info-box-content">
-                <span class="info-box-text">Inventory</span>
+                <span class="info-box-text">Copy Trading</span>
                 <span class="info-box-number">5,200</span>
               </div>
               <!-- /.info-box-content -->
@@ -365,7 +391,7 @@
               <span class="info-box-icon"><i class="far fa-comment"></i></span>
 
               <div class="info-box-content">
-                <span class="info-box-text">Direct Messages</span>
+                <span class="info-box-text">Add to Favourite</span>
                 <span class="info-box-number">163,921</span>
               </div>
               <!-- /.info-box-content -->
@@ -374,155 +400,47 @@
 
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Browser Usage</h3>
-
+                <h3 class="card-title">Alert Settings</h3>
                 <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
+                  <button type="button" class="btn btn-tool" onclick="copyToClipboard()">
+                      <i class="fas fa-copy"></i> <!-- Changed icon to copy icon -->
                   </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove">
-                    <i class="fas fa-times"></i>
-                  </button>
+                  <!-- <button type="button" class="btn btn-tool" data-card-widget="remove">
+                      <i class="fas fa-times"></i>
+                  </button> -->
                 </div>
-              </div>
+            </div>
               <!-- /.card-header -->
               <div class="card-body">
-                <div class="row">
-                  <div class="col-md-8">
-                    <div class="chart-responsive">
-                      <canvas id="pieChart" height="150"></canvas>
-                    </div>
-                    <!-- ./chart-responsive -->
-                  </div>
-                  <!-- /.col -->
-                  <div class="col-md-4">
-                    <ul class="chart-legend clearfix">
-                      <li><i class="far fa-circle text-danger"></i> Chrome</li>
-                      <li><i class="far fa-circle text-success"></i> IE</li>
-                      <li><i class="far fa-circle text-warning"></i> FireFox</li>
-                      <li><i class="far fa-circle text-info"></i> Safari</li>
-                      <li><i class="far fa-circle text-primary"></i> Opera</li>
-                      <li><i class="far fa-circle text-secondary"></i> Navigator</li>
-                    </ul>
-                  </div>
-                  <!-- /.col -->
-                </div>
-                <!-- /.row -->
+                <pre id="jsonDisplay" style="text-align: left; white-space:  overflow-x: auto;">
+  {
+      "passphrase": "MZXW633PN5XW6MZX",
+      "time": "{{ '{{timenow}}' }}",
+      "strategy_uid": "{{data.uid}}",
+      "api_key": "gAAAAABl4zWGi6nVTdvG31Vwh2w5ib-TFNXiCpHqC8X6uw-15ScNkumzUrfryp9Ds2WS6J7fMWELa8OcFHCIBBFhfsCGbs8-J_tnFi_v4L2ZGtmtxIflea4=",
+      "api_secret": "gAAAAABl4zWHda9nFjMyhJDp2gxMEQjF8ShCgGoQqzOph4K7DK8Jq6XVZqndubumaHwsEKedgBNrTa_0BUe3Yj5RlrAHMs-JU6-EtECAD3Xl400e7UZDezzHlN_Y9qHl-6hfnM28kaRg",
+      "sandbox_mode": "False",
+      "exchange": "{{ '{{exchange}}' }}",
+      "order_id": "{{ '{{strategy.order.id}}' }}",
+      "symbol": "{{ '{{ticker}}' }}",
+      "price": "{{ '{{strategy.order.price}}' }}",
+      "side": "{{ '{{strategy.order.action}}' }}",
+      "size": "{{ '{{strategy.order.contracts}}' }}",
+      "pos_size": "{{ '{{strategy.position_size}}' }}",
+      "type": "limit",
+      "market_pos": "{{ '{{strategy.market_position}}' }}",
+      "params": {}
+    }
+                </pre>
               </div>
               <!-- /.card-body -->
               <div class="card-footer bg-white p-0">
-                <ul class="nav nav-pills flex-column">
-                  <li class="nav-item">
-                    <a href="#" class="nav-link">
-                      United States of America
-                      <span class="float-right text-danger">
-                        <i class="fas fa-arrow-down text-sm"></i>
-                        12%</span>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="#" class="nav-link">
-                      India
-                      <span class="float-right text-success">
-                        <i class="fas fa-arrow-up text-sm"></i> 4%
-                      </span>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="#" class="nav-link">
-                      China
-                      <span class="float-right text-warning">
-                        <i class="fas fa-arrow-left text-sm"></i> 0%
-                      </span>
-                    </a>
-                  </li>
-                </ul>
+                  <!-- Footer content here if needed -->
               </div>
               <!-- /.footer -->
-            </div>
-            <!-- /.card -->
-
-            <!-- PRODUCT LIST -->
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Recently Added Products</h3>
-
-                <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body p-0">
-                <ul class="products-list product-list-in-card pl-2 pr-2">
-                  <li class="item">
-                    <div class="product-img">
-                      <img src="/static/assets/img/default-150x150.png" alt="Product Image" class="img-size-50">
-                    </div>
-                    <div class="product-info">
-                      <a href="javascript:void(0)" class="product-title">Samsung TV
-                        <span class="badge badge-warning float-right">$1800</span></a>
-                      <span class="product-description">
-                        Samsung 32" 1080p 60Hz LED Smart HDTV.
-                      </span>
-                    </div>
-                  </li>
-                  <!-- /.item -->
-                  <li class="item">
-                    <div class="product-img">
-                      <img src="/static/assets/img/default-150x150.png" alt="Product Image" class="img-size-50">
-                    </div>
-                    <div class="product-info">
-                      <a href="javascript:void(0)" class="product-title">Bicycle
-                        <span class="badge badge-info float-right">$700</span></a>
-                      <span class="product-description">
-                        26" Mongoose Dolomite Men's 7-speed, Navy Blue.
-                      </span>
-                    </div>
-                  </li>
-                  <!-- /.item -->
-                  <li class="item">
-                    <div class="product-img">
-                      <img src="/static/assets/img/default-150x150.png" alt="Product Image" class="img-size-50">
-                    </div>
-                    <div class="product-info">
-                      <a href="javascript:void(0)" class="product-title">
-                        Xbox One <span class="badge badge-danger float-right">
-                        $350
-                      </span>
-                      </a>
-                      <span class="product-description">
-                        Xbox One Console Bundle with Halo Master Chief Collection.
-                      </span>
-                    </div>
-                  </li>
-                  <!-- /.item -->
-                  <li class="item">
-                    <div class="product-img">
-                      <img src="/static/assets/img/default-150x150.png" alt="Product Image" class="img-size-50">
-                    </div>
-                    <div class="product-info">
-                      <a href="javascript:void(0)" class="product-title">PlayStation 4
-                        <span class="badge badge-success float-right">$399</span></a>
-                      <span class="product-description">
-                        PlayStation 4 500GB Console (PS4)
-                      </span>
-                    </div>
-                  </li>
-                  <!-- /.item -->
-                </ul>
-              </div>
-              <!-- /.card-body -->
-              <div class="card-footer text-center">
-                <a href="javascript:void(0)" class="uppercase">View All Products</a>
-              </div>
-              <!-- /.card-footer -->
-            </div>
-            <!-- /.card -->
+          </div>
+          
+          
           </div>
           <!-- /.col -->
         </div>
@@ -600,6 +518,21 @@
       }
     }
   </script>
+  <script>
+    function copyToClipboard() {
+        // Select the JSON text
+        const jsonText = document.getElementById("jsonDisplay").innerText;
+        // Use the Clipboard API to copy the text
+        navigator.clipboard.writeText(jsonText).then(function() {
+            console.log('Successfully copied to clipboard');
+            // Optionally, you can alert the user that the copy was successful
+            // alert('Copied to clipboard');
+        }, function(err) {
+            console.error('Could not copy text: ', err);
+        });
+    }
+    </script>
+    
 
   <!-- Chart.js Script for Rendering Charts -->
 <script>

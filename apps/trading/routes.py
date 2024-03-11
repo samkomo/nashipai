@@ -50,19 +50,20 @@ async def webhook() -> Tuple[Dict[str, Any], int]:
     try:    
         decrypted_api_key = decrypt_message(payload['api_key'], encryption_key)
         decrypted_secret_key = decrypt_message(payload['api_secret'], encryption_key)
-    
 
-        # Instantiate and process the trade with the trading bot
-        trading_bot = TradingBot(payload['exchange'], decrypted_api_key, decrypted_secret_key)
-        await trading_bot.initialize_exchange()  # Ensure the exchange is initialized
-        result = await trading_bot.create_order(payload)  # Now safely proceed with trade processing
+        # Check if in sandbox mode
+        if payload.get('sandbox_mode').lower() == 'false':
+            # Instantiate and process the trade with the trading bot if not in sandbox mode
+            trading_bot = TradingBot(payload['exchange'], decrypted_api_key, decrypted_secret_key)
+            await trading_bot.initialize_exchange()  # Ensure the exchange is initialized
+            result = await trading_bot.create_order(payload)  # Now safely proceed with trade processing
 
-        # If trade execution fails, return an error response
-        if not result["success"]:
-            return jsonify({"status": "error", "message": result.get("error", "Trade execution failed")}), 500
-            
-        # result = {"success": True, "message": "Test Mode"}
-
+            # If trade execution fails, return an error response
+            if not result["success"]:
+                return jsonify({"status": "error", "message": result.get("error", "Trade execution failed")}), 500
+        else:
+            # Simulate success for sandbox mode
+            result = {"success": True, "message": "Sandbox Mode - No actual trade executed"}
 
 
         # Extract relevant, consistent information
@@ -111,10 +112,20 @@ async def webhook() -> Tuple[Dict[str, Any], int]:
             return jsonify({"errorCode": "invalid_market_pos", "message": "Invalid market position"}), 400
         
         db.session.commit()
-        if result["success"]:
-            return jsonify({"status": "success", "order": result.get("order", {}), "uid": uid, "profit": profit if 'profit' in locals() else None, "percentage_profit": percentage_profit if 'percentage_profit' in locals() else None}), 200
+        # if result["success"]:
+        #     return jsonify({"status": "success", "order": result.get("order", {}), "uid": uid, "profit": profit if 'profit' in locals() else None, "percentage_profit": percentage_profit if 'percentage_profit' in locals() else None}), 200
+        # else:
+        #     return jsonify({"status": "error", "message": result.get("error", "Trade execution failed"), "uid": uid}), 500
+        
+        # Final response
+        if payload.get('sandbox_mode').lower() == 'false':
+            if result["success"]:
+                return jsonify({"status": "success", "order": result.get("order", {}), "uid": uid, "profit": profit if 'profit' in locals() else None, "percentage_profit": percentage_profit if 'percentage_profit' in locals() else None}), 200
+            else:
+                return jsonify({"status": "error", "message": result.get("error", "Trade execution failed"), "uid": uid}), 500
         else:
-            return jsonify({"status": "error", "message": result.get("error", "Trade execution failed"), "uid": uid}), 500
+            # Response for sandbox mode (since no actual trade is executed, adjust the message as needed)
+            return jsonify({"status": "success", "message": "Sandbox Mode - No actual trade executed", "uid": uid}), 200
     except SQLAlchemyError as e:
         db.session.rollback()
         logger.error(f"An error occurred during decryption: {e}")

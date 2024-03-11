@@ -148,19 +148,21 @@
                                   <tbody>
                                       {% for order in orders %}
                                       <tr class="{{ 'table-success' if order.profit and order.profit > 0 else 'table-danger' }}">
-                                        <td>{{ order.order_id[-8:] }}</td>
+                                        <td>{{ order.uid[-8:] }}</td>
                                         <td>
                                             Exit {{ order.market_pos }} <br>
                                             Entry {{ order.market_pos }}
                                           </td>
                                           <td>
-                                            {{ order.exit_time }} <br>
+                                            {{ order.exit_time  if order.exit_time not in (None, 'None', '') else 'Open' }} <br>
                                             {{ order.entry_time }}
                                           </td>
                                           <td>
-                                            ${{ order.exit_price | default('N/A') }}<br>
-                                            ${{ order.entry_price | default('N/A') }}
-                                          </td>
+                                            {{ order.exit_price if order.exit_price not in (None, 'None', '') else 'Open' }}<br>
+                                            {{ order.entry_price if order.entry_price not in (None, 'None', '') else 'Open' }}
+                                        </td>
+                                        
+                                        
                                           <td>{{ order.size }}</td>
                                           <!-- <td>{{ order.exit_time }}</td> -->
                                           <!-- <td>{{ order.exit_price | default('N/A') }}</td> -->

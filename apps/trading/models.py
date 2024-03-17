@@ -30,10 +30,11 @@ class Order(db.Model):
 
     # Add a foreign key column to reference the Strategy
     strategy_uid = db.Column(db.String(64), db.ForeignKey('strategies.uid'), nullable=True)
-    
+    sandbox_mode = db.Column(db.Boolean, default=False, nullable=False)
+
     # Define a relationship in the Order model for backref (optional)
     strategy = db.relationship('Strategy', back_populates='orders')
-
+    
     def __repr__(self):
         return f"<Order {self.id} - {self.exchange_id}>"
 
@@ -61,10 +62,15 @@ class Strategy(db.Model):
     uid = db.Column(db.String(64), unique=True, nullable=False)
     creation_date = db.Column(db.DateTime, nullable=True, server_default=db.func.now())
     updated_date = db.Column(db.DateTime, nullable=True)
-    # New fields
     coin_pair = db.Column(db.String(20))  # Adjust the size as needed
     time_frame = db.Column(db.String(10))
     strategy_name = db.Column(db.String(255))  # Ensure the length accommodates your strategy name length
+    # New fields
+    settings_file_path = db.Column(db.String(), nullable=True)
+    description = db.Column(db.Text)  # Adjust the field type/length as needed
+    developer = db.Column(db.String(20))  # Adjust the field type/length as needed
+    status = db.Column(db.String(20), default='Optimization', nullable=False)  # Adjust the field type/length as needed
+
     # Existing fields...
     net_profit_percent_all = db.Column(db.Float)
     net_profit_percent_long = db.Column(db.Float)

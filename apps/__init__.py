@@ -4,10 +4,12 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
+from flask_migrate import Migrate
 
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+
 
 
 def register_extensions(app):
@@ -49,4 +51,6 @@ def create_app(config):
     register_extensions(app)
     register_blueprints(app)
     configure_database(app)
+    # Assuming `app` is your Flask application and `db` is the SQLAlchemy database instance
+    migrate = Migrate(app, db)  
     return app

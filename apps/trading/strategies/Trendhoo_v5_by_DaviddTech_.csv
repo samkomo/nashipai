@@ -1,0 +1,271 @@
+Name,Value
+"__indicatorName","🚀 Trendhoo [v5] by @DaviddTech 🤖"
+"Core Boilerplate Version","5.0.2 @ 0.0.1"
+"Visit Davidd.tech for More Info","www.davidd.tech"
+"Join our discord","discord.gg/daviddtech"
+"Join our telegram","t.me/DaviddTech"
+"Hide welcome message (READ TOOLTIP)",true
+"Optimiser MODE 🚀",false
+"Long Trades",true
+"Short Trades",true
+"Trade type","NORMAL"
+"Use Limit exit",true
+"Allow Reversal Trades",false
+"Close trade on reverse strategy",false
+"Wait for confirmation of new entry on reversal",false
+"Wait for isBarConfirmed?",true
+"Type of Take Profit","R:R"
+"Type of Stoploss","ATR"
+"Ignore Wicks -- Read Tooltip 🛟",false
+"Ignore Wicks Protection SL %",0.5
+"Stop Loss Long %",1.6
+"Take Profit Long %",2.8
+"Stop Loss Short %",1.6
+"Take Profit Short %",2.8
+"Stop Loss Long PIPS",100
+"Take Profit Long PIPS",200
+"Stop Loss Short PIPS",100
+"Take Profit Short PIPS",200
+"Indicator Source - SL L🟢","close"
+"Indicator Source - SL S🔴","close"
+"Highest High lookback",50
+"Lowest Low Lookback",60
+"Profit factor Long (Risk to Reward)",1.5
+"Profit factor Short (Risk to Reward)",1.5
+"Left Bars",9
+"Right Bars",1
+"ATR Multiplier For Stoploss",2.5
+"ATR Source","Source"
+"Source Upper ATR Stoploss","close"
+"Source Lower ATR Stoploss","close"
+"ATR Swing lookback",14
+"Use Trailing Stop",false
+"Trailing Stop Source","Close"
+"When to Activate Trailing?","Instant"
+"Trigger Trailing Threshold % of Total TP",15
+"Use Trailing Take Profit",false
+"ATR Trailing Stop Multiplier",3
+"Round to the symbol's",true
+"Decimals points",3
+"Wait X Candles Between Entries",1
+"Set Max Candles in Trade",false
+"Max Candles",20
+"Set Max Total DrawDown",false
+"Max Drawdown (%)",20
+"Set Max Intraday Loss",false
+"Max Intraday Loss (%)",20
+"Set Max Consecutive Days with Losses",false
+"Max Consecutive Days with Losses",20
+"Percent or Fixed","Percent"
+"% of Portfolio",20
+"Leverage",1
+"Dynamic Leverage (READ TOOLTIP)",false
+"MAX",25
+"Wiggle",25
+"Risk",100
+"Show Liquadation line (BETA)",false
+"Block Trades if Liquadation is before SL (BETA)",false
+"Maintenance Margin Rate",0.5
+"Position Size (BETA)","Manual"
+"DA Source","ATR"
+"DA Multi 1",0.5
+"DA 2",1
+"DA 3",1.5
+"ℹ️ More information","https://youtu.be/4PB227Y_3CY"
+"Use Martingale?",false
+"Martingale Type","NORMAL"
+"Martingale Multipler",2
+"Use DCA.",false
+"Max no. of safe orders",6
+"Divide position by Max no. of safe orders",false
+"Safety order step scale 🛟",1.1
+"Safety order volume scale 🛟",1.1
+"Price deviation to open safety orders (%)",1
+"Activate Threshold Risk:Reward?",false
+"Threshold Risk:Reward",1
+"Activate Minimum TP %?",false
+"What if TP is too small ?","Use Percentage Instead"
+"Min Threshold TP %",1
+"Activate Max SL %",false
+"What if threshold SL breaks ?","Use Percentage Instead"
+"Threshold Max % SL",7
+"Close Position Early if Price Crosses MA?",false
+"MA Protection Type","EMA"
+"MA Protection Length",50
+"Indicator Source - Protection","close"
+"Move to Breakeven","OFF"
+"Trigger B.E %",1.5
+"Wiggle room to cover commision - B.E %",0
+"Take Multi Profit X3",false
+"TP1",false
+"% First TP",33
+"Level 1",33
+"TP2",false
+"% Second TP",33
+"Level 2",66
+"% Third TP",100
+"Level 3",100
+"ATR length",14
+"Use Moving Averages?","Off"
+"Inverse Moving Averages?",false
+"MA #1",false
+"MA Type #1","EMA"
+"MA Length #1",9
+"MA #2",false
+"MA Type #2","EMA"
+"MA Length #2",21
+"MA #3",false
+"MA Type #3","EMA"
+"MA Length #3",55
+"MA #4",false
+"MA Type #4","EMA"
+"MA Length #4",100
+"MA #5",false
+"MA Type #5","T3"
+"MA Length #5",300
+"HMA BAR",false
+"HMA Length",100
+"Enable Max Trades?",false
+"Max Trades Per Direction?",5
+"Force Exit On Exit Signal ?",false
+"============ MAIN STRATEGY SETTING START ============",true
+"Fat finger up length",2.5
+"Fat finger down length",2.5
+"Source","close"
+"Smooth_trending",9
+"Lookback",100
+"ALMA offset_trend",1.375
+"ALMA Sigma",6
+"Band Multiplier",1
+"Custom Band length_trend ? (Else same as Lookback)",false
+"Custom Band length_trend",20
+"Highlight",true
+"Fill",true
+"Bar Color",false
+"============ MAIN STRATEGY SETTING /END ============",true
+"▓▓▓ 🧠 AExternal Source Confluence 🧠 ▓▓▓",false
+"⚙️ First Indicator #1","close"
+"⚙️ Second Indicator #1 (Optional)","close"
+"⚙️ Fixed Level #1 L🟢",10
+"⚙️ Fixed Level #1 S🔴",10
+"🧠 Base L🟢 #1","close"
+"#1 L🟢 is:",">"
+"  └─> #1 This: L🟢","First Indicator"
+"🧠 Base S🔴 #1","close"
+"#1 S🔴 is:","<"
+"  └─> #1 This: S🔴","First Indicator"
+"FOMC",false
+"FOMCM",false
+"PPI",false
+"CPI",false
+"CSI",false
+"CCI",false
+"NFP",false
+"Close X MINUTES before event",10
+"Pause for X MINUTES after event",60
+"Use The Range Filter?",false
+"RF Period",100
+"RF Multi",3
+"Enable RSI (Big Extender) ?",false
+"RSI Strategy","Standard"
+"RSI Source","close"
+"RSI Length",14
+"RSI Overbrought",75
+"RSI Oversold",25
+"RSI MA","MA"
+"MA Length - RSI",14
+"RSI Reverse",false
+"Enable Hurst exponent ?",false
+"Hurst Exp Length",64
+"Hurst Type","Trending Market"
+"Enable Hurst MTF ? 🚨",false
+"Hurst Timeframe (BETA)","Chart"
+"Enable ADX ?",false
+"ADX Type","Normal"
+"ADX Line Type","Static"
+"ADX Smoothing",14
+"ADX Above line",30
+"ADX MA Length",200
+"Use DI for Direction ?",false
+"DI Length",14
+"Min stoch length",19
+"Max stoch length Smoothing",100
+"Stoch Smoothing",2
+"Inverse adaptive",false
+"Use Rate of Change?",false
+"Enable ADX MTF ? 🚨",false
+"ADX Timeframe (BETA)","Chart"
+"Enable HA Overlay ?",false
+"Volume confirm?",false
+"TDFI Lookback",20
+"Version to use?","v1"
+"Filter High",0.05
+"Filter Low",-0.05
+"MMA Length v2",13
+"MMA Mode v2","ema"
+"SMMA Mode v2","ema"
+"N Length v2",3
+"Enable MFI ?",false
+"MFI Source","hlc3"
+"MFI Length",14
+"MFI Overbrought",51
+"MFI Oversold",49
+"Enable MFI MTF ? 🚨",false
+"MFI Timeframe (BETA)","Chart"
+"Enable Flat Market ?",false
+"MA Type Flat Market","VWMA"
+"MA Length Flat Market",75
+"Flat Market Above Line",30
+"Enable FM MTF ? 🚨",false
+"FM Timeframe (BETA)","Chart"
+"Use vWap / ema",false
+"VWap Source","close"
+"VWap2 Source","close"
+"Vwap Length",3
+"Enable Volume Flow ?",false
+"VFI length",130
+"Coef",0.2
+"Max. vol. cutoff",2.5
+"Enable Volume Flow MTF ? 🚨",false
+"VF Timeframe (BETA)","Chart"
+"Enable Bull Bear Power?",false
+"Custom Length for BBP",13
+"Enable BBP MTF ? 🚨",false
+"BBP Timeframe (BETA)","Chart"
+"Timezone","GMT+2"
+"Active Sessions & Week Days? (READ TOOLTIP)",false
+"Mon",true
+"Tue",true
+"Wed",true
+"Thur",true
+"Fri",true
+"Sat",true
+"Sun",true
+"Session Background Color",false
+"Allow Trades in Custom Session 1",false
+"Custom Session 2",false
+"Trade 24/7 (Normally for Crypto)",true
+"End of Session Close All Trades?",false
+"Session 1","03:00"
+"Session 2","08:00"
+"Use Date Filter for BackTeser (Active Above)",false
+"Alert Frequency","Once per bar"
+"Use Immediately?",true
+"LIVE TRADING 🏄",false
+"Use Simple Bot?",false
+"Use Saftey TP",false
+"Use Saftey SL",false
+"Telegram Channel ID",
+"Show Entry/SL/TP",true
+"Desktop or Mobile","Auto"
+"Show Labels",true
+"Show trail trigger plotOfPrice",true
+"Full Dashboard 🐌",true
+"Trade",true
+"Indicators",true
+"Backtests",true
+"PnL 🐌",true
+"Watermark?",true
+"Log",false
+"Dark Mode | Bull | Bear | Notr",true
+"Notes"," "

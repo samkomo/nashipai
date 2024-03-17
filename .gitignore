@@ -31,4 +31,9 @@ apps/static/assets/node_modules
 apps/static/assets/yarn.lock
 apps/static/assets/.temp
 
+# Ignore the migrations directory
+/migrations/
+
+# Ignore virtual environment
+/venv/
 # apps/config.py

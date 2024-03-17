@@ -1,37 +1,61 @@
 Name,Value
-"__indicatorName","SMBreakout Strategy @SMK"
-"Length",50
-"Type ➞","Wicks"
-"Target",3.5
-"Line Style","Dashed"
+"__indicatorName","Zero Lag MACD Strategy @SMK"
+"Fast Length",14
+"Slow Length",28
+"Source","close"
+"Signal Smoothing",11
+"MA Type (Oscillator)?","ZLEMA"
+"MA Type (Signal Line)?","ZLEMA"
+"Apply Laguerre Smoothing",true
+"Laguerre Gamma",0.02
+"Draw MACD Leader",true
+"Indicate MACD Leader Crossings",true
+"Length",200
+"Fast EMA Length",3
+"Slow EMA Length",30
+"Highlight ?",true
+"Await Bar Confirmation ?",true
 "Timezones: Src","Exchange"
 "-> Dst","Exchange"
 "Srart From ",true
 "End To       ",false
 "Select Session Days",true
 "Mon",true
-"Tue",true
+"Tue",false
 "Wed",true
 "Thu",true
 "Fri",true
 "Sat",false
-"Sun",false
-"Session Start",true
-":",30
-"Session End ",true
-"1. ADX",false
-"2. MACD",false
-"3. Bar direction=Trade direction",true
+"Sun",true
+"Session Start",false
+":",0
+"Session End ",false
+"1. ADX:",false
+"L",200
+"S",100
+"Lv",20
+"2. MACD:",false
+"Lf",12
+"Ls",26
+"3. Bar direction=Trade direction",false
 "4. Rising Volume",false
-"5. Rising/Falling MA",false
+"5. Rising/Falling MA:",false
 "Bars",1
-"6. High/Low Filter",false
-"Lookback",20
-"7. Maximum close change (％) allowed on entry",true
-"8. Minimum close change (％) allowed on entry",false
-"9. RSI OS/OB",true
-"10. MA",false
-"11. EMA Difference",true
+"6. High/Low Filter:",false
+"Lookback",10
+"7. Maximum close change allowed on entry:",false
+"(％)",1
+"8. Minimum close change allowed on entry:",false
+"9. RSI:",false
+"OS",25
+"OB",75
+"10. MA:",false
+"Type","SMA"
+"11. EMA Difference:",false
+"EMA 1",30
+"EMA 2",60
+"13. M.Bias:",false
+"P",7
 "Take Profit Type","R:R"
 "Stop Loss Type","ATR"
 " Profit ％    ",4.5
@@ -39,9 +63,9 @@ Name,Value
 " Profit ＄    ",333
 " Stop ＄  ",100
 " ATR Period  ",40
-" Multiplier",4.5
+" Multiplier",2.65
 " Trailing ％  ",3
-" R:R    1:",2.4
+" R:R    1:",1.5
 "Fixed RR",true
 " HH / LL   ",200
 "  LO / HI ",5
@@ -63,10 +87,10 @@ Name,Value
 "InDay Loss ％ ",3
 "Daily Trades  ",10
 "Weekly Trades",50
-"     Order Size","SIZE"
+"     Order Size","NONE"
 "Use Net Profit",true
 "​🇪​​🇶​​🇺​​🇮​​🇹​​🇾​",10
-"​🇸​​🇮​​🇿​​🇪",5000
+"​🇸​​🇮​​🇿​​🇪",1000
 "​🇨​​🇴​​🇳​​🇹​​🇷​​🇦​​🇨​​🇹​​🇸​",1
 "Take Profit LV 1",false
 "﻿",30

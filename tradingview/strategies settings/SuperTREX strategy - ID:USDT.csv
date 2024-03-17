@@ -1,0 +1,45 @@
+Name,Value
+"__indicatorName","SuperTREX strategy"
+"Strategy Direction","all"
+"Length",5
+"OverSold",39
+"OverBought",60
+"HTF","4 hours"
+"SuperTrend Multiplier",3.9
+"SuperTrend Period",9
+"Timezones: Src","Exchange"
+"-> Dst","Exchange"
+"Srart From ",true
+"End To       ",false
+"Select Session Days",false
+"Mon",true
+"Tue",true
+"Wed",true
+"Thu",true
+"Fri",true
+"Sat",false
+"Sun",false
+"Session Start",false
+":",0
+"Session End ",false
+"EMA Filter",false
+"Source","close"
+"Offset",0
+"Method","SMA"
+"VSLRT Filter",false
+"Short Term Length",20
+"Long Term Length",50
+"BB Length",20
+"BB MultFactor",2
+"KC Length",20
+"KC MultFactor",1.5
+"Use TrueRange (KC)",false
+"ATR Period",14
+"Source Upper","close"
+"Source Lower","close"
+"ATR Multiplier Upper",4.75
+"ATR Multiplier Lower",3
+"Risk-to-Reward Ratio",1.8
+"Dashboard Size","Small"
+"Performance Summary",true
+"Monthly Performance",true

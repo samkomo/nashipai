@@ -1,6 +1,6 @@
 import os
 from ccxt.base.errors import BadRequest, ArgumentsRequired
-from flask import make_response, render_template, request, jsonify, send_from_directory
+from flask import make_response, render_template, request, jsonify, send_from_directory, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from apps.trading import blueprint
 from flask_login import login_required
@@ -17,6 +17,7 @@ from ccxt.base.errors import BaseError, OrderNotFound
 import time  # Correct import for the time module
 from apps.trading.utillity import encrypt_message, decrypt_message, generate_trade_uid, load_encryption_key, format_value,calculate_profit_and_percentage, generate_key
 from cryptography.fernet import InvalidToken
+from datetime import datetime
 
 # Configure basic logging for the application
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -27,7 +28,16 @@ EXPECTED_PASSPHRASE = os.environ.get('WEBHOOK_PASSPHRASE')
 encryption_key = load_encryption_key()
 # logger.info(f"Encryption Key: {generate_key()}")
 
-# logging.basicConfig(level=logging.DEBUG)
+
+# Define the base directory of your Flask app
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Use a relative path for the upload folder within your project directory
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'strategies')
+
+# Ensure the upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 @blueprint.route('/webhook', methods=['POST'])
@@ -249,34 +259,76 @@ def get_trades():
     return render_template('trading/trades.html', trades=orders_list)  # Pass 'trades' variable to the template context
 
 
-# Assuming Strategy is your SQLAlchemy model
 @blueprint.route('/strategies', methods=['GET'])
 def get_strategies():
     try:
         # Fetch all trading data from the database
-        trades = Strategy.query.all()
-        # Convert the SQLAlchemy objects to dictionaries
-        trades_list = [trade.to_dict() for trade in trades]
+        strategies = Strategy.query.all()
+
+        # Get current time once to use for all calculations
+        current_time = datetime.utcnow()
+
+        strategies_list = []
+        for strategy in strategies:
+            strategy_dict = strategy.to_dict()
+
+            # Calculate duration in days
+            duration_days = (current_time - strategy.creation_date).days
+            strategy_dict['duration'] = f"{duration_days} days ago"
+
+            # Determine the filter based on strategy status
+            if strategy.status == 'Live Trading':
+                sandbox_mode_filter = False
+            elif strategy.status == 'Paper Trading':
+                sandbox_mode_filter = True
+            else:
+                # Default or other status handling
+                sandbox_mode_filter = None
+
+            # Prepare the query based on sandbox_mode_filter if applicable
+            if sandbox_mode_filter is not None:
+                orders_query = Order.query.filter_by(strategy_uid=strategy.uid, sandbox_mode=sandbox_mode_filter)
+            else:
+                # If sandbox_mode_filter is None, count all orders regardless of sandbox_mode
+                orders_query = Order.query.filter_by(strategy_uid=strategy.uid)
+
+            # Calculate the number of orders and their cumulative profit
+            num_orders = orders_query.count()
+            winning_trades = orders_query.filter(Order.profit > 0).count()
+            losing_trades = orders_query.filter(Order.profit <= 0).count()  # Assuming break-even trades are considered neither winning nor losing
+            cumulative_profit = sum(order.profit for order in orders_query.all()) if num_orders > 0 else 0
+            cumulative_percentage_profit = sum(order.percentage_profit for order in orders_query.all()) if num_orders > 0 else 0
+            # Calculate win rate
+            win_rate = (winning_trades / num_orders * 100) if num_orders > 0 else 0
+
+            strategy_dict['num_orders'] = num_orders
+            strategy_dict['cumulative_profit'] = cumulative_profit
+            strategy_dict['cumulative_percentage_profit'] = cumulative_percentage_profit
+            strategy_dict['win_rate'] = f"{win_rate:.2f}"  # Format the win rate as a percentage with 2 decimal places
+
+            strategies_list.append(strategy_dict)
+
+
         # Render the template with the trading data
-        return render_template('trading/strategies.html', trades=trades_list)
+        return render_template('trading/strategies.html', trades=strategies_list)
     except Exception as e:
         logger.error('Error fetching strategies: %s', str(e))
         return jsonify({'error': 'Error fetching strategies'}), 500
 
 
-@blueprint.route('/strategies_list', methods=['GET'])
-def list_strategies():
-    try:
-        # Query all trades from the database
-        trades = Strategy.query.all()
-        # Transform the SQLAlchemy objects into dictionaries
-        trades_data = [trade.to_dict() for trade in trades]
-        # Return the data as a JSON response
-        return jsonify(trades_data), 200
-    except Exception as e:
-        # Log the exception and return an error response
-        logger.error('Error retrieving trades: %s', str(e))
-        return jsonify({'error': 'Error retrieving trades'}), 500
+# @blueprint.route('/strategies_list', methods=['GET'])
+# def list_strategies():
+#     try:
+#         # Query all trades from the database
+#         trades = Strategy.query.all()
+#         # Transform the SQLAlchemy objects into dictionaries
+#         trades_data = [trade.to_dict() for trade in trades]
+#         # Return the data as a JSON response
+#         return jsonify(trades_data), 200
+#     except Exception as e:
+#         # Log the exception and return an error response
+#         logger.error('Error retrieving trades: %s', str(e))
+#         return jsonify({'error': 'Error retrieving trades'}), 500
     
 
 # @blueprint.route('strategy-detail')
@@ -289,6 +341,15 @@ def strategy_details(strategy_uid):
     strategy = Strategy.query.get_or_404(strategy_uid)
     
     # Access the orders directly through the relationship
+    # You might want to further filter these orders based on some condition, like status
+    # if strategy.status == 'Paper Trading':
+    #     orders = strategy.orders.filter_by(sandbox_mode=True).all()
+    # elif strategy.status == 'Live':
+    #     orders = strategy.orders.filter_by(sandbox_mode=False).all()
+    # else:
+    #     orders = strategy.orders.all()
+
+     # Access the orders directly through the relationship
     orders = strategy.orders
 
     # Sort orders by date_time in ascending order using sorted() for cumulative calculations
@@ -329,8 +390,6 @@ def strategy_details(strategy_uid):
                             order_dates=order_dates,  # Use original sorted list for chart
                             profits=profits,
                             cumulative_profits=cumulative_profits)
-
-
 
 
 
@@ -403,6 +462,54 @@ def upload_settings():
         logger.error('Error processing the file: %s', str(e))
         return jsonify({'error': 'Error processing the file'}), 500
 
+@blueprint.route('/update-strategy/<int:strategy_id>', methods=['POST'])
+def update_strategy(strategy_id):
+    # Retrieve the strategy object from the database
+    strategy = Strategy.query.get_or_404(strategy_id)
+
+    # Get form data
+    strategy_name = request.form.get('strategy_name')
+    description = request.form.get('description')
+    status = request.form.get('status')
+    developer = request.form.get('developer')
+
+    # File handling part
+    file = request.files.get('settingsFile')
+    if file:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        try:
+            file.save(file_path)
+            strategy.settings_file_path = file_path  # Save the file path to the strategy
+            logger.info('File uploaded successfully.')
+        except Exception as e:
+            logger.error(f'An error occurred while saving the file: {str(e)}')
+    else:
+        logger.info('No file part or file not allowed.')
+
+    # Update strategy fields based on form data
+    if strategy_name:
+        strategy.strategy_name = strategy_name
+    if description:
+        strategy.description = description
+    if status:
+        strategy.status = status
+    if developer:
+        strategy.developer = developer
+
+    # Save updated strategy object to the database
+    try:
+        db.session.commit()
+        logger.info('Strategy updated successfully.')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'An error occurred while updating the strategy: {str(e)}')
+
+    # Redirect to the strategy details page to show the updated details
+    return redirect(url_for('trading_blueprint.strategy_details', strategy_uid=strategy.id))
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv'}
 
 def normalize_key(key):
     # Replace problematic characters and convert to lowercase

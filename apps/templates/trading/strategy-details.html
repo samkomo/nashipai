@@ -14,6 +14,9 @@
   <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
   <!-- overlayScrollbars -->
   <link rel="stylesheet" href="/static/assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
   <style>
@@ -79,9 +82,9 @@
                   <li class="nav-item">
                     <a class="nav-link" id="custom-tabs-one-messages-tab" data-toggle="pill" href="#custom-tabs-one-messages" role="tab" aria-controls="custom-tabs-one-messages" aria-selected="false">Backtest Performance Summary</a>
                   </li>
-                  <!-- <li class="nav-item">
+                  <li class="nav-item">
                     <a class="nav-link" id="custom-tabs-one-settings-tab" data-toggle="pill" href="#custom-tabs-one-settings" role="tab" aria-controls="custom-tabs-one-settings" aria-selected="false">Settings</a>
-                  </li> -->
+                  </li>
                 </ul>
               </div>
               <div class="card-body">
@@ -123,76 +126,78 @@
                       </div><!-- /.card-body -->
                     </div>
                     <!-- /.card -->
-                    
                     <div class="card">
                       <div class="card-header">
-                          <h3 class="card-title">Orders Summary</h3>
+                        <h3 class="card-title">Orders</h3>
                       </div>
                       <!-- /.card-header -->
                       <div class="card-body">
-                          <div class="table-responsive">
-                              <table class="table m-0">
-                                  <thead>
-                                      <tr>
-                                          <th>Order ID</th>
-                                          <th>Type</th>
-                                          <th>Date/Time</th>
-                                          <th>Price</th>
-                                          <th>Contracts</th>
-                                          <!-- <th>Exit Date/Time</th> -->
-                                          <!-- <th>Exit Price</th> -->
-                                          <th>Profit</th>
-                                          <th>Cum. Profit</th>
-                                      </tr>
-                                  </thead>
-                                  <tbody>
-                                      {% for order in orders %}
-                                      <tr class="{{ 'table-success' if order.profit and order.profit > 0 else 'table-danger' }}">
-                                        <td>{{ order.uid[-8:] }}</td>
-                                        <td>
-                                            Exit {{ order.market_pos }} <br>
-                                            Entry {{ order.market_pos }}
-                                          </td>
-                                          <td>
-                                            {{ order.exit_time  if order.exit_time not in (None, 'None', '') else 'Open' }} <br>
-                                            {{ order.entry_time }}
-                                          </td>
-                                          <td>
-                                            {{ order.exit_price if order.exit_price not in (None, 'None', '') else 'Open' }}<br>
-                                            {{ order.entry_price if order.entry_price not in (None, 'None', '') else 'Open' }}
-                                        </td>
-                                        
-                                        
-                                          <td>{{ order.size }}</td>
-                                          <!-- <td>{{ order.exit_time }}</td> -->
-                                          <!-- <td>{{ order.exit_price | default('N/A') }}</td> -->
-                                          <td>
-                                              {{ order.profit | default('0') }} USDT
-                                              <br>
-                                              <small class="text-muted">{{ order.percentage_profit | default('0') }}%</small>
-                                          </td>
-                                          <td>
-                                              {{ order.cumulative_profit | default('0') }} USDT
-                                              <br>
-                                              <small class="text-muted">{{ order.cumulative_percentage_profit | default('0') }}%</small>
-                                          </td>
-                                      </tr>
-                                      {% endfor %}
-                                  </tbody>
-                              </table>
-                          </div>
-                          <!-- /.table-responsive -->
+                        <table id="orders" class="table table-bordered table-striped">
+                          <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Type</th>
+                                <th>Date/Time</th>
+                                <th>Price</th>
+                                <th>Contracts</th>
+                                <!-- <th>Exit Date/Time</th> -->
+                                <!-- <th>Exit Price</th> -->
+                                <th>Profit</th>
+                                <th>Cum. Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr class="{{ 'table-success' if order.profit and order.profit > 0 else 'table-danger' }}">
+                              <td>{{ order.uid[-8:] }}</td>
+                              <td>
+                                  Exit {{ order.market_pos }} <br>
+                                  Entry {{ order.market_pos }}
+                                </td>
+                                <td>
+                                  {{ order.exit_time  if order.exit_time not in (None, 'None', '') else 'Open' }} <br>
+                                  {{ order.entry_time }}
+                                </td>
+                                <td>
+                                  {{ order.exit_price if order.exit_price not in (None, 'None', '') else 'Open' }}<br>
+                                  {{ order.entry_price if order.entry_price not in (None, 'None', '') else 'Open' }}
+                              </td>
+                              
+                              
+                                <td>{{ order.size }}</td>
+                                <!-- <td>{{ order.exit_time }}</td> -->
+                                <!-- <td>{{ order.exit_price | default('N/A') }}</td> -->
+                                <td>
+                                    {{ order.profit | default('0') }} USDT
+                                    <br>
+                                    <small class="text-muted">{{ order.percentage_profit | default('0') }}%</small>
+                                </td>
+                                <td>
+                                    {{ order.cumulative_profit | default('0') }} USDT
+                                    <br>
+                                    <small class="text-muted">{{ order.cumulative_percentage_profit | default('0') }}%</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                          <tfoot>
+                          <tr>
+                            <th>Order ID</th>
+                            <th>Type</th>
+                            <th>Date/Time</th>
+                            <th>Price</th>
+                            <th>Contracts</th>
+                            <!-- <th>Exit Date/Time</th> -->
+                            <!-- <th>Exit Price</th> -->
+                            <th>Profit</th>
+                            <th>Cum. Profit</th>
+                          </tr>
+                          </tfoot>
+                        </table>
                       </div>
                       <!-- /.card-body -->
-                      <div class="card-footer">
-                          <div class="float-right">
-                              <!-- Optionally place controls like buttons here -->
-                          </div>
-                      </div>
-                      <!-- /.card-footer -->
                     </div>
-                  
-
+   
                   </div>
                   <div class="tab-pane fade" id="custom-tabs-one-profile" role="tabpanel" aria-labelledby="custom-tabs-one-profile-tab">
                     <div class="table-responsive">
@@ -347,7 +352,46 @@
                     </div>
                   </div>
                   <div class="tab-pane fade" id="custom-tabs-one-settings" role="tabpanel" aria-labelledby="custom-tabs-one-settings-tab">
-                     Pellentesque vestibulum commodo nibh nec blandit. Maecenas neque magna, iaculis tempus turpis ac, ornare sodales tellus. Mauris eget blandit dolor. Quisque tincidunt venenatis vulputate. Morbi euismod molestie tristique. Vestibulum consectetur dolor a vestibulum pharetra. Donec interdum placerat urna nec pharetra. Etiam eget dapibus orci, eget aliquet urna. Nunc at consequat diam. Nunc et felis ut nisl commodo dignissim. In hac habitasse platea dictumst. Praesent imperdiet accumsan ex sit amet facilisis.
+                    <div class="card card-primary">
+                      <form action="/trading/update-strategy/{{data.id}}" method="post" enctype="multipart/form-data">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="inputName">Strategy Name</label>
+                                <input type="text" name="strategy_name" id="inputName" class="form-control" value="{{data.strategy_name}}">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputDescription">Strategy Description</label>
+                                <textarea name="description" id="inputDescription" class="form-control" rows="4">{{data.description}}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputStatus">Status</label>
+                                <select name="status" id="inputStatus" class="form-control custom-select">
+                                    <option disabled>Select one</option>
+                                    <option>Optimisation</option>
+                                    <option selected>Paper Trading</option>
+                                    <option>Live Trading</option>
+                                    <option>Archived</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputClientCompany">Strategy Developer</label>
+                                <input type="text" name="developer" id="inputClientCompany" class="form-control" value="{{data.developer}}">
+                            </div>
+                            <div class="form-group">
+                                <label for="bestSettingsFile">Best Settings (CSV file)</label>
+                                <input type="file" name="settingsFile" id="bestSettingsFile" class="form-control" accept=".csv" value="{{data.settings_file_path}}">
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <div class="col-12">
+                                <a href="#" class="btn btn-secondary">Cancel</a>
+                                <input type="submit" value="Save Changes" class="btn btn-success float-right">
+                            </div>
+                        </div>
+                    </form>
+                    
+                    </div>
                   </div>
                 </div>
               </div>
@@ -499,6 +543,12 @@
   <!-- ChartJS -->
   <script src="/static/assets/plugins/chart.js/Chart.min.js"></script>
 
+  <!-- DataTables -->
+  <script src="/static/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+  <script src="/static/assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+  <script src="/static/assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+
   <!-- PAGE SCRIPTS -->
   <script src="/static/assets/js/pages/dashboard2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -643,6 +693,53 @@
               intersect: false
           }
       }
+  });
+</script>
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<script>
+$(document).ready(function() {
+    $('#strategyForm').submit(function(event) {
+        event.preventDefault(); // Prevent the default form submission
+        var formData = new FormData(this);
+        var strategyId = {{data.id}}; // Use data.id here
+        console.info('ID:', strategyId);
+        alert('Strategy updated successfully!');
+        $.ajax({
+            type: 'POST',
+            url: '/trading/update-strategy/' + strategyId, // Use the strategy ID in the request URL
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                alert('Strategy updated successfully!');
+                // Redirect or update UI as needed
+                // Redirect or update UI as needed, for example:
+                window.location.href = '/trading/strategy-details/' + strategyId;
+            },
+            error: function() {
+                alert('Error updating strategy.');
+            }
+        });
+    });
+});
+</script>
+<script>
+  $(function () {
+    $("#orders").DataTable({
+      "responsive": true,
+      "autoWidth": false,
+      "ordering": false,
+      "order": [[2, 'desc']] // Order by the third column as default
+    });
+    $('#example2').DataTable({
+      "paging": true,
+      "lengthChange": false,
+      "searching": false,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+    });
   });
 </script>
 

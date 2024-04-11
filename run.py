@@ -3,6 +3,7 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
+import logging
 import os
 from   flask_migrate import Migrate
 from   flask_minify  import Minify
@@ -19,6 +20,8 @@ DEBUG = (os.getenv('DEBUG', 'False') == 'True')
 # The configuration
 get_config_mode = 'Debug' if DEBUG else 'Production'
 
+# Configure basic logging for the application
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 try:
 
     # Load the configuration using the default values

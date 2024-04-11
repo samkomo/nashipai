@@ -14,8 +14,8 @@
           <img src="/static/assets/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="{{ url_for('authentication_blueprint.logout') }}" class="d-block">
-            {{ current_user.username }} - Logout
+          <a href="{{ url_for('authentication_blueprint.profile') }}" class="d-block">
+            {{ current_user.username }}
           </a>
         </div>
       </div>
@@ -76,7 +76,7 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{{ url_for('trading_blueprint.get_strategies') }}" class="nav-link">
+                <a href="{{ url_for('strategies_blueprint.list_strategies') }}" class="nav-link">
                     <i class="nav-icon fas fa-chart-line"></i>
                     <p>Strategies</p>
                 </a>

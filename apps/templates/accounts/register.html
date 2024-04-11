@@ -68,7 +68,22 @@
               </div>
             </div>
           </div>
-          
+          <!-- Add this block above the "agreeTerms" checkbox -->
+          <div class="input-group mb-3">
+            <select name="roles" class="custom-select" id="roleSelect">
+                <option selected>Choose a role...</option>
+                {% for role in roles %}
+                    <option value="{{ role }}">{{ role }}</option>
+                {% endfor %}
+            </select>
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <span class="fas fa-users"></span>
+                </div>
+            </div>
+          </div>
+          <!-- Continue with the "agreeTerms" checkbox and the rest of the form -->
+
           <div class="row">
             <div class="col-8">
               <div class="icheck-primary">
@@ -111,6 +126,8 @@
   <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
   <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  
 
 {% endblock javascripts %}
 

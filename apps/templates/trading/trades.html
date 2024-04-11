@@ -62,6 +62,7 @@
                 <th>Price</th>
                 <th>Position</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
           </thead>
           <tbody>
@@ -78,15 +79,6 @@
               <td>{{ trade.entry_price }}</td>
               <td>{{ trade.market_pos }}</td>
               <td>{{ trade.status }}</td>
-              <!-- <td>
-                {% if trade.status == 'Posted' %}
-                  <span class="badge badge-info">Posted</span>
-                {% elif trade.status == 'Error' %}
-                  <span class="badge badge-danger">Error</span>
-                {% elif trade.status == 'Filled' %}
-                  <span class="badge badge-success">Filled</span>
-                {% endif %}
-              </td> -->
               <td class="text-right py-0 align-middle">
                 <div class="btn-group btn-group-sm">
                   <a href="#" class="btn btn-info"><i class="fas fa-eye"></i></a>
@@ -111,6 +103,7 @@
                 <th>Price</th>
                 <th>Position</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </tfoot>
           </table>

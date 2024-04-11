@@ -44,122 +44,223 @@
     <!-- Main content -->
     <section class="content">
       <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Strategies</h3>
-          <div class="card-tools">
-            <!-- Here you can add controls like collapse or remove -->
-            <a href="#"  class="btn btn-tool btn-sm" id="uploadSettings">
-
-                <i class="fas fa-plus-square"></i>
-              </a>
-              <input type="file" id="fileInput" style="display: none;" onchange="uploadFile(this.files)">
-          </div>
-        </div>
-        <!-- /.card-header -->
+        <div class="card-header d-flex p-0">
+          <h3 class="card-title p-3">Strategies</h3>
+          <ul class="nav nav-pills ml-auto p-2">
+            <li class="nav-item"><a class="nav-link btn-outline-primary active" href="#tab_1" data-toggle="tab">Trading Bots</a></li>
+            <li class="nav-item"><a class="nav-link btn-outline-primary" href="#tab_2" data-toggle="tab">My Strategies</a></li>
+            <li class="nav-item"><a class="nav-link btn-outline-primary" href="#tab_3" data-toggle="tab">Marketplace</a></li>
+            
+          </ul>
+        </div><!-- /.card-header -->
         <div class="card-body">
-          <table id="example1" class="table table-bordered table-striped">
-            <thead>
-              <tr>
-                <th>Strategy Name</th>
-                <th>Coin Pair</th>
-                <th>Timeframe</th>
-                <th>Status</th>
-                <th># Trades</th>
-                <th>Net Profit</th>
-                <th>Win Rate</th>
-                
-                <!-- <th>Equity Curve</th> -->
-                <!-- Add more headers if needed -->
-              </tr>
-          </thead>
-          <tbody>
-            <!-- Use Jinja2 templating to loop through the trades and populate the table -->
-            {% for trade in trades %}
-            <tr class="clickable-row" data-id="{{ trade.id }}">
-              <td>
-                <a class="text-info" style="font-weight: bold;">
-                  {{ trade.strategy_name }}
-                </a>
-                <br/>
-                <small>
-                  Created: {{ trade.duration }} <!-- Use the 'duration' key from the dictionary -->
-              </small>
-              
-              </td>
-              <td>
-                <!-- Display Coin Pair and include the relevant icon -->
-                <!-- You might need to map the coin pair to the icon file name -->
-                <img src="/static/assets/icons/{{ trade.coin_pair | upper }}@2x.png" alt="{{ trade.coin_pair }} Icon" style="height: 20px; margin-right: 5px;"> {{ trade.coin_pair }}
-              </td>              
-            <td>{{ trade.time_frame }}</td>
-            
-          
-      
-                <td>
-                  {% if trade.status == 'Optimisation' %}
-                      <span class="badge bg-warning">Optimisation</span>
-                  {% elif trade.status == 'Paper Trading' %}
-                      <span class="badge bg-primary">Paper Trading</span>
-                  {% elif trade.status == 'Live Trading' %}
-                      <span class="badge bg-success">Live Trading</span>
-                  {% elif trade.status == 'Archived' %}
-                      <span class="badge bg-secondary">Archived</span>
-                  {% else %}
-                      <span class="badge bg-danger">Unknown</span>
-                  {% endif %}
-              </td>
-              <td>{{ trade.num_orders }}</td>
-              <td>
-                {% if trade.cumulative_profit >= 0 %}
-                    <a class="text-success">
-                        ${{ "%.2f"|format(trade.cumulative_profit) }}
-                    </a>
-                    <br>
-                    <small class="text-success">{{ "%.2f"|format(trade.cumulative_percentage_profit) }}%</small>
-                {% else %}
-                    <a class="text-danger">
-                        ${{ "%.2f"|format(trade.cumulative_profit) }}
-                    </a>
-                    <br>
-                    <small class="text-danger">{{ "%.2f"|format(trade.cumulative_percentage_profit) }}%</small>
-                {% endif %}
-            </td>
-              
-                
-              <td class="project_progress">
-                <div class="progress progress-sm">
-                    <div class="progress-bar bg-success" role="progressbar" 
-                         style="width: {{ trade.win_rate }}%" 
-                         aria-valuenow="{{ trade.win_rate }}" 
-                         aria-valuemin="0" 
-                         aria-valuemax="100">
+          <div class="tab-content">
+            <div class="tab-pane active" id="tab_1">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>Bot Name</th>
+                    <th>Strategy</th>
+                    <th>Execution</th>
+                    <th>Status</th>
+                    <th># Trades</th>
+                    <th>ToTal P&L</th>
+                    <th>Win Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for trade in trades %}
+                  <tr data-widget="expandable-table" aria-expanded="false">
+                    <td>
+                      <a class="text-info" style="font-weight: bold;">
+                        {{ trade.strategy_name }}
+                      </a>
+                      <br/>
+                      <small>
+                        Created: {{ trade.duration }} <!-- Use the 'duration' key from the dictionary -->
+                    </small>
+                    
+                    </td>
+                    <td>
+                      <!-- Display Coin Pair and include the relevant icon -->
+                      <!-- You might need to map the coin pair to the icon file name -->
+                      <img src="/static/assets/icons/{{ trade.coin_pair | upper }}@2x.png" alt="{{ trade.coin_pair }} Icon" style="height: 20px; margin-right: 5px;"> {{ trade.coin_pair }}
+                    </td>              
+                    <td>{{ trade.time_frame }}</td>
+                    <td>
+                      {% if trade.status == 'Optimisation' %}
+                          <span class="badge bg-warning">Optimisation</span>
+                      {% elif trade.status == 'Paper Trading' %}
+                          <span class="badge bg-primary">Paper Trading</span>
+                      {% elif trade.status == 'Live Trading' %}
+                          <span class="badge bg-success">Live Trading</span>
+                      {% elif trade.status == 'Archived' %}
+                          <span class="badge bg-secondary">Archived</span>
+                      {% else %}
+                          <span class="badge bg-danger">Unknown</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ trade.num_orders }}</td>
+                  <td>
+                    {% if trade.cumulative_profit >= 0 %}
+                        <a class="text-success">
+                            ${{ "%.2f"|format(trade.cumulative_profit) }}
+                        </a>
+                        <br>
+                        <small class="text-success">{{ "%.2f"|format(trade.cumulative_percentage_profit) }}%</small>
+                    {% else %}
+                        <a class="text-danger">
+                            ${{ "%.2f"|format(trade.cumulative_profit) }}
+                        </a>
+                        <br>
+                        <small class="text-danger">{{ "%.2f"|format(trade.cumulative_percentage_profit) }}%</small>
+                    {% endif %}
+                  </td>
+                  
+                    
+                  <td class="project_progress">
+                    <div class="progress progress-sm">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ trade.win_rate }}%" 
+                             aria-valuenow="{{ trade.win_rate }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
                     </div>
-                </div>
-                <small>{{ trade.win_rate }}% Profitable</small>
-            </td>
-            
-            
-            
-          </tr>
-          {% endfor %}
-        </tbody>
-            <tfoot>
-              <tr>
-                <th>Strategy Name</th>
-                <th>Coin Pair</th>
-                <th>Timeframe</th>
-                <th>Status</th>
-                <th># Trades</th>
-                <th>Net Profit</th>
-                <th>Win Rate</th>
+                    <small>{{ trade.win_rate }}% Profitable</small>
+                  </td>
                 
-                <!-- <th>Equity Curve</th> -->
-                <!-- Add more headers if needed -->
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-        <!-- /.card-body -->
+                
+                
+                  </tr>
+
+                  <tr class="expandable-body">
+                    <td colspan="7">
+                      <p>
+                        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+                      </p>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+            </div>
+            <!-- /.tab-pane -->
+            <div class="tab-pane" id="tab_2">
+              <table id="example1" class="table table-bordered table-striped">
+                <thead>
+                  <tr>
+                    <th>Strategy Name</th>
+                    <th>Coin Pair</th>
+                    <th>Timeframe</th>
+                    <th>Status</th>
+                    <th># Trades</th>
+                    <th>Net Profit</th>
+                    <th>Win Rate</th>
+                  </tr>
+              </thead>
+              <tbody>
+                <!-- Use Jinja2 templating to loop through the trades and populate the table -->
+                {% for trade in trades %}
+                <tr class="clickable-row" data-id="{{ trade.id }}">
+                  <td>
+                    <a class="text-info" style="font-weight: bold;">
+                      {{ trade.strategy_name }}
+                    </a>
+                    <br/>
+                    <small>
+                      Created: {{ trade.duration }} <!-- Use the 'duration' key from the dictionary -->
+                  </small>
+                  
+                  </td>
+                  <td>
+                    <!-- Display Coin Pair and include the relevant icon -->
+                    <!-- You might need to map the coin pair to the icon file name -->
+                    <img src="/static/assets/icons/{{ trade.coin_pair | upper }}@2x.png" alt="{{ trade.coin_pair }} Icon" style="height: 20px; margin-right: 5px;"> {{ trade.coin_pair }}
+                  </td>              
+                <td>{{ trade.time_frame }}</td>
+                
+              
+          
+                    <td>
+                      {% if trade.status == 'Optimisation' %}
+                          <span class="badge bg-warning">Optimisation</span>
+                      {% elif trade.status == 'Paper Trading' %}
+                          <span class="badge bg-primary">Paper Trading</span>
+                      {% elif trade.status == 'Live Trading' %}
+                          <span class="badge bg-success">Live Trading</span>
+                      {% elif trade.status == 'Archived' %}
+                          <span class="badge bg-secondary">Archived</span>
+                      {% else %}
+                          <span class="badge bg-danger">Unknown</span>
+                      {% endif %}
+                  </td>
+                  <td>{{ trade.num_orders }}</td>
+                  <td>
+                    {% if trade.cumulative_profit >= 0 %}
+                        <a class="text-success">
+                            ${{ "%.2f"|format(trade.cumulative_profit) }}
+                        </a>
+                        <br>
+                        <small class="text-success">{{ "%.2f"|format(trade.cumulative_percentage_profit) }}%</small>
+                    {% else %}
+                        <a class="text-danger">
+                            ${{ "%.2f"|format(trade.cumulative_profit) }}
+                        </a>
+                        <br>
+                        <small class="text-danger">{{ "%.2f"|format(trade.cumulative_percentage_profit) }}%</small>
+                    {% endif %}
+                </td>
+                  
+                    
+                  <td class="project_progress">
+                    <div class="progress progress-sm">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ trade.win_rate }}%" 
+                             aria-valuenow="{{ trade.win_rate }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small>{{ trade.win_rate }}% Profitable</small>
+                </td>
+                
+                
+                
+                </tr>
+                {% endfor %}
+            </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Strategy Name</th>
+                    <th>Coin Pair</th>
+                    <th>Timeframe</th>
+                    <th>Status</th>
+                    <th># Trades</th>
+                    <th>Net Profit</th>
+                    <th>Win Rate</th>
+                    
+                    <!-- <th>Equity Curve</th> -->
+                    <!-- Add more headers if needed -->
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <!-- /.tab-pane -->
+            <div class="tab-pane" id="tab_3">
+              Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+              Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+              when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+              It has survived not only five centuries, but also the leap into electronic typesetting,
+              remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset
+              sheets containing Lorem Ipsum passages, and more recently with desktop publishing software
+              like Aldus PageMaker including versions of Lorem Ipsum.
+            </div>
+            <!-- /.tab-pane -->
+          </div>
+          <!-- /.tab-content -->
+        </div><!-- /.card-body -->
       </div>
 
      
@@ -252,6 +353,15 @@
       "responsive": true,
     });
   });
-</script>
   
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    $.fn.dataTable.tables({visible: true, api: true}).columns.adjust();
+  });
+
+
+
+
+
+</script>
+
 {% endblock javascripts %}

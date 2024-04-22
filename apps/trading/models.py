@@ -1,12 +1,11 @@
 # Import required modules
+import sys
+import humanize
 from apps import db
 import pandas as pd
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from datetime import datetime
-
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
 
 class TradingBot(db.Model):
     __tablename__ = 'trading_bots'
@@ -18,17 +17,37 @@ class TradingBot(db.Model):
     status = db.Column(db.String(50), default='active', index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
-    strategy = db.relationship('Strategy', backref='trading_bots')
+    strategy = db.relationship('Strategy', back_populates='trading_bots')
     user = db.relationship('User', backref='trading_bots')
     account = db.relationship('Account', backref='trading_bots')
-    positions = db.relationship('Position', backref='trading_bot', lazy='dynamic')
-    orders = db.relationship('Order', backref='trading_bot', lazy='select', cascade='all, delete')
+    positions = db.relationship('Position', back_populates='trading_bot')
+
+    @property
+    def cumulative_pnl(self):
+        return sum(position.pnl for position in self.positions if position.status == 'closed')
+
+    def to_dict(self):
+        """ Serialize the TradingBot object including strategy details. """
+        days_running = (datetime.utcnow() - self.created_at).days if self.created_at else 0
+        # natural_day = humanize.naturalday(self.created_at) if self.created_at else 'Unknown'
+
+        return {
+            'id': self.id,
+            'name': self.name,
+            'strategy': self.strategy.to_dict_bot() if self.strategy else None,
+            'account': self.account.to_dict_bot() if self.account else None,
+            'positions': [position.to_dict() for position in self.positions] if self.positions else [],
+            'user_id': self.user_id,
+            'exchange_account_id': self.exchange_account_id,
+            'status': self.status,
+            'cumulative_pnl': self.cumulative_pnl,  # Add cumulative PnL to the serialized output
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
+            'days_running': days_running
+        }
+
 
     def __repr__(self):
         return f'<TradingBot "{self.name}", Status: {self.status}>'
-
-    def to_dict(self):
-        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
     def save(self, commit=True):
         db.session.add(self)
@@ -63,30 +82,75 @@ class TradingBot(db.Model):
         self.status = 'inactive'
         self.save()
 
+
 class Position(db.Model):
     __tablename__ = 'positions'
     id = db.Column(db.Integer, primary_key=True)
     trading_bot_id = db.Column(db.Integer, db.ForeignKey('trading_bots.id'), nullable=False)
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
     quantity = db.Column(db.Float, nullable=False)  # Current size of the position
-    average_entry_price = db.Column(db.Float, nullable=False)  # Weighted average price of entered positions
+    position_type = db.Column(db.String(20), nullable=False)  # e.g., long, short
+    average_entry_price = db.Column(db.Float, nullable=False)  # Weighted average price of entered positions 
     current_price = db.Column(db.Float)  # Current market price of the asset
     status = db.Column(db.String(50), default='open')  # e.g., open, closed
+    symbol = db.Column(db.String(50), nullable=False)  # e.g., SOLUSDT, ETHUSDT
     opened_at = db.Column(db.DateTime, default=datetime.utcnow)
     closed_at = db.Column(db.DateTime)
-    pnl = db.Column(db.Float, nullable=True, default=0)  # Profit and Loss
+    # pnl = db.Column(db.Float, nullable=True, default=0)  # Profit and Loss
+    @hybrid_property
+    def pnl(self):
+        if self.position_type == 'long' and self.status == 'closed':
+            return (self.current_price - self.average_entry_price) * self.quantity
+        elif self.position_type == 'short' and self.status == 'closed':
+            return (self.average_entry_price - self.current_price) * self.quantity
+        return 0
+
 
     # Relationships
-    order = db.relationship('Order', back_populates='positions')
+    orders = db.relationship('Order', back_populates='position')
     trading_bot = db.relationship('TradingBot', back_populates='positions')
 
     def __repr__(self):
         return f'<Position {self.id} - Quantity: {self.quantity}, PnL: {self.pnl}>'
+    
 
     def to_dict(self):
-        """Serialize position to a dictionary."""
-        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
-
+        recursion_limit = sys.getrecursionlimit()  # Get the current recursion limit
+        print("Current recursion limit:", recursion_limit)
+        """Serialize position to a dictionary, including the related orders."""
+        position_data = {
+            'id': self.id,
+            'trading_bot_id': self.trading_bot_id,
+            'quantity': self.quantity,
+            'position_type': self.position_type,
+            'average_entry_price': self.average_entry_price,
+            'current_price': self.current_price,
+            'status': self.status,
+            'symbol': self.symbol,
+            'opened_at': self.opened_at.strftime('%Y-%m-%d %H:%M:%S') if self.opened_at else None,
+            'pnl': self.pnl,  # Include PnL in the serialization
+            'closed_at': self.closed_at.strftime('%Y-%m-%d %H:%M:%S') if self.closed_at else None,
+            'orders': [order.to_dict() for order in self.orders]
+        }
+        return position_data
+    
+    def update_position(self, order_price, order_quantity, order_side):
+        if self.position_type == 'long':
+            if order_side == 'buy':
+                new_total_quantity = self.quantity + order_quantity
+                if new_total_quantity > 0:
+                    self.average_entry_price = ((self.average_entry_price * self.quantity) + (order_price * order_quantity)) / new_total_quantity
+                self.quantity = new_total_quantity
+            elif order_side == 'sell':
+                self.quantity -= order_quantity
+        elif self.position_type == 'short':
+            if order_side == 'sell':
+                new_total_quantity = self.quantity + order_quantity  # Note short positions have negative quantity
+                if new_total_quantity < 0:
+                    self.average_entry_price = ((self.average_entry_price * -self.quantity) + (order_price * order_quantity)) / -new_total_quantity
+                self.quantity = new_total_quantity
+            elif order_side == 'buy':
+                self.quantity -= order_quantity  # Reducing a short position
+    
     def delete(self, commit=True):
         """Delete the Position instance from the database."""
         db.session.delete(self)
@@ -140,8 +204,7 @@ class Position(db.Model):
 class Order(db.Model):
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
-    trading_bot_id = db.Column(db.Integer, db.ForeignKey('trading_bots.id'), nullable=False)
-    position_id = db.Column(db.Integer, db.ForeignKey('positions.id'), nullable=True)
+    position_id = db.Column(db.Integer, db.ForeignKey('positions.id'), nullable=False)
     symbol = db.Column(db.String(20), nullable=False)
     order_type = db.Column(db.String(20), nullable=False)  # e.g., market, limit
     side = db.Column(db.String(10), nullable=False)  # e.g., buy, sell
@@ -152,12 +215,26 @@ class Order(db.Model):
     executed_at = db.Column(db.DateTime, nullable=True)
 
     # Relationships
-    position = db.relationship('Position', back_populates='order')
-    trading_bot = db.relationship('TradingBot', backref='orders')
+    position = db.relationship('Position', back_populates='orders')
+    # trading_bot = db.relationship('TradingBot', backref='orders')
 
     def __repr__(self):
         return f'<Order {self.id} - {self.symbol}, {self.side}, Status: {self.status}>'
-
+    
+    def to_dict(self):
+        """Serialize order to a dictionary."""
+        return {
+            'id': self.id,
+            'position_id': self.position_id,
+            'symbol': self.symbol,
+            'order_type': self.order_type,
+            'side': self.side,
+            'quantity': self.quantity,
+            'entry_price': self.entry_price,
+            'created_at': self.created_at,
+            'status': self.status
+        }
+    
     def execute(self, execution_price):
         """Execute the order, updating its status and potentially modifying a related position."""
         self.status = 'executed'
@@ -171,7 +248,6 @@ class Order(db.Model):
             # Logic to create a new position
             # This assumes existence of a method in Position to handle new orders without an existing position
             new_position = Position(
-                trading_bot_id=self.trading_bot_id,
                 quantity=self.quantity,
                 average_entry_price=execution_price,
                 current_price=execution_price,  # Assuming current price is the execution price at order creation
@@ -258,3 +334,4 @@ class TradeAlert(db.Model):
         if commit:
             db.session.commit()
         return new_alert
+

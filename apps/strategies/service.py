@@ -1,11 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
+import logging
 
 import pandas as pd
 from apps.authentication.models import User
 from apps.strategies.models import Strategy, StrategyMetadata, StrategyPerformanceMetrics, Subscription
 from apps import db
-from apps.trading.routes import normalize_key
+from apps.strategies.util import normalize_key
+
+logger = logging.getLogger(__name__)
 
 class StrategyService:
     @staticmethod
@@ -108,7 +111,7 @@ class StrategyService:
 
         
     @staticmethod
-    def delete_strategy(strategy_id):
+    def delete_strategy(strategy_id, current_user_id):
         """
         Deletes a trading strategy and its related data.
         :param strategy_id: ID of the strategy to delete.
@@ -117,6 +120,9 @@ class StrategyService:
         strategy = Strategy.query.get(strategy_id)
         if not strategy:
             return {'status': 'error', 'message': 'Strategy not found.'}
+        
+        if strategy.developer_id != current_user_id:
+            return {'status': 'error', 'message': 'Unauthorized to delete this strategy.'}
 
         try:
             # Optional: Delete related data (e.g., performance metrics, subscriptions)
@@ -161,13 +167,13 @@ class StrategyService:
                         query = query.filter(getattr(Strategy, key) == value)
 
             strategies = query.all()
-            return {'status': 'success', 'strategies': [strategy.to_dict() for strategy in strategies]}
+            return {'status': 'success', 'strategies': Strategy.list_to_dict(strategies)}
         except Exception as e:
             # Log the error and return an error message
             return {'status': 'error', 'message': f'Failed to list strategies: {str(e)}'}
 
     @staticmethod
-    def subscribe_to_strategy(user_id, strategy_id):
+    def subscribe_to_strategy(user_id, strategy_id, subscription_type):
         """
         Subscribes a user to a strategy.
         :param user_id: ID of the subscribing user.
@@ -180,19 +186,20 @@ class StrategyService:
         if not user or not strategy:
             return {'status': 'error', 'message': 'User or Strategy not found.'}
         
-        # Check if the user is already subscribed
-        existing_subscription = Subscription.query.filter_by(user_id=user_id, strategy_id=strategy_id).first()
-        if existing_subscription:
-            return {'status': 'error', 'message': 'User already subscribed to this strategy.'}
+        # Check if the user is already subscribed to the strategy
+        subscription = Subscription.query.filter_by(user_id=user_id, strategy_id=strategy_id).first()
+        if subscription and subscription.is_active:
+            return {'status': 'error', 'message': 'Already subscribed to this strategy.'}
 
         # Create new subscription
+        new_subscription = Subscription(user_id=user_id, strategy_id=strategy_id, subscription_type=subscription_type)
+        db.session.add(new_subscription)
         try:
-            new_subscription = Subscription(user_id=user_id, strategy_id=strategy_id, start_date=datetime.utcnow())
-            new_subscription.save()
-            return {'status': 'success', 'message': 'Subscription successful.'}
+            db.session.commit()
+            return {'status': 'success', 'message': 'Subscription successful'}
         except Exception as e:
             db.session.rollback()
-            return {'status': 'error', 'message': f'Failed to create subscription: {str(e)}'}
+            return {'status': 'error', 'message': f'Failed to subscribe: {str(e)}'}
 
     @staticmethod
     def unsubscribe_from_strategy(user_id, strategy_id):
@@ -204,18 +211,16 @@ class StrategyService:
         """
         # Find the subscription
         subscription = Subscription.query.filter_by(user_id=user_id, strategy_id=strategy_id).first()
-        
         if not subscription:
             return {'status': 'error', 'message': 'Subscription not found.'}
         
+        db.session.delete(subscription)
         try:
-            # Delete the subscription
-            db.session.delete(subscription)
             db.session.commit()
-            return {'status': 'success', 'message': 'Unsubscribed successfully.'}
+            return {'status': 'success', 'message': 'Unsubscribed successfully'}
         except Exception as e:
             db.session.rollback()
-            return {'status': 'error', 'message': f'Failed to unsubscribe: {str(e)}'}
+            return {'status': 'error', 'message': f'Error during unsubscription: {str(e)}'}
 
     @staticmethod
     def list_user_subscriptions(user_id):

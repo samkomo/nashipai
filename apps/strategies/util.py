@@ -49,33 +49,52 @@ def pretty_date(time=False):
 
 
 
-def process_csv(filepath, filename):
-    # Extract coin_pair, time_frame, and strategy name from the file name using regex
-    match = re.search(r"^(?P<coin_pair>\w+)\.P_(?P<time_frame>\d+[hmd]) (?P<strategy>.+?) (?=\[.*\]|-)", filename)
-
-    if match:
-        coin_pair = match.group('coin_pair')
-        time_frame = match.group('time_frame').replace('m', 'min')  # Convert '15m' to '15min'
-        strategy_name = match.group('strategy') + " Strategy by SMK"  # Append "by SMK" to the strategy name
-    else:
-        # Fallback values or handle error
-        coin_pair, time_frame, strategy_name = 'Unknown', 'Unknown', 'Unknown'
-
-    # Reading the CSV file
-    df = pd.read_csv(filepath)
+def process_csv(filepath):
+    # Extracting filename from the filepath
+    filename = filepath.split('/')[-1]
     
-    # Fixing the approach to extract performance metrics and settings
-    # Assume all settings start with '__' and metrics do not.
-    metrics_columns = [col for col in df.columns if not col.startswith('__')]
-    settings_columns = [col for col in df.columns if col.startswith('__')]
+    # Regex pattern to extract coin_pair, time_frame, and strategy_name
+    regex_pattern = r'^(?P<coin_pair>[A-Z0-9]+(?:\.[A-Z0-9]+)*)[._](?P<time_frame>\d+[mhD])_(?P<strategy_name>.*?Strategy.*?)(?=-)'
+    
+    # Extract coin_pair, time_frame, and strategy name from the file name using regex
+    match = re.search(regex_pattern, filename)
+    if not match:
+        return {'status': 'error', 'message': 'Failed to extract essential details from filename'}
 
-    # Assuming the first row contains the desired data.
-    strategy_metrics = df[metrics_columns].iloc[0].to_dict()
-    strategy_settings = df[settings_columns].iloc[0].to_dict()
-
-    return coin_pair, time_frame, strategy_name, strategy_metrics, strategy_settings
-
-
+    # Extracted details
+    details = match.groupdict()
+    details['strategy_name'] = details['strategy_name'].replace('_', ' ')  # Replacing underscores with spaces
+    # Converting time_frame to a more readable format
+    time_frame = details['time_frame']
+    if time_frame.endswith('m'):
+        details['time_frame'] = time_frame.replace('m', 'min')
+    elif time_frame.endswith('h'):
+        details['time_frame'] = time_frame.replace('h', ' hours')
+    elif time_frame.endswith('D'):
+        details['time_frame'] = time_frame.replace('D', ' day')
+    
+    try:
+        # Reading the CSV file
+        df = pd.read_csv(filepath)
+        
+        # Extracting strategy metrics and settings
+        metrics_columns = [col for col in df.columns if not col.startswith('__')]
+        settings_columns = [col for col in df.columns if col.startswith('__')]
+        
+        # Assuming the first row contains the desired data
+        strategy_metrics = df[metrics_columns].iloc[0].to_dict()
+        strategy_settings = df[settings_columns].iloc[0].to_dict()
+        
+        details.update({
+            'status': 'success',  # Indicating successful processing
+            'strategy_metrics': strategy_metrics,
+            'strategy_settings': strategy_settings
+        })
+        
+        return details
+    except Exception as e:
+        return {'status': 'error', 'message': str(e)}
+    
 def normalize_key(key):
     # Clean and normalize the key as specified
     return (key.replace(' ', '_')
@@ -86,3 +105,6 @@ def normalize_key(key):
             .replace('&', 'and')
             .replace('/_', '_')
             .lower())
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv'}

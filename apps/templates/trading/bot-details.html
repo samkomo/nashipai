@@ -1,0 +1,438 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Project Detail {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <!-- Ensure your custom CSS is below the Prism CSS link -->
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .json-container { position: relative; }
+    .copy-btn { 
+        position: absolute; 
+        top: 10px; 
+        right: 10px; 
+        padding: 5px 10px; 
+        /* cursor: pointer; 
+        background-color: #4CAF50; 
+        color: white; 
+        border: none;  */
+    }
+    /* Increased specificity for pre and code tags */
+    pre, .language-json code { 
+        background-color: #f4f4f4 !important; /* Light grey and use !important to ensure override */
+        color: #333; /* Darker text color for better readability */
+    }
+</style>
+  <!-- DataTables -->
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="/static/assets/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+{% endblock stylesheets %}
+
+{% block content %}  
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Project Detail</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Project Detail</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+    {{bot|tojson}}
+
+      <!-- Default box -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Projects Detail</h3>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 col-md-12 col-lg-8 order-2 order-md-1">
+                 <!-- Custom tabs (Charts with tabs)-->
+                 <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        <i class="fas fa-chart-pie mr-1"></i>
+                        PNL
+                      </h3>
+                      <div class="card-tools">
+                        <!-- <ul class="nav nav-pills ml-auto">
+                          <li class="nav-item">
+                            <a class="nav-link active" onclick="toggleChart('profit')" href="#revenue-chart" data-toggle="tab">Bar</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" onclick="toggleChart('equityCurve')" href="#sales-chart" data-toggle="tab">Line</a>
+                          </li>
+                        </ul> -->
+                      </div>
+                    </div><!-- /.card-header -->
+                    <div class="card-body">
+                      <div class="tab-content p-0">
+                        <!-- Morris chart - Sales -->
+                        <!-- <div class="chart tab-pane active" id="revenue-chart"
+                              style="position: relative; height: 300px;">
+                            <canvas id="profitChart" height="300" style="height: 300px;"></canvas>
+                          </div>
+                        <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;">
+                          <canvas id="equityCurveChart" height="300" style="height: 300px;"></canvas>
+                        </div> -->
+                        <div class="chart-container" style="position: relative; height:40vh;">
+                          <canvas id="comboChart"></canvas>
+                      </div>
+                      </div>
+                    </div><!-- /.card-body -->
+                  </div>
+              <div class="row">
+                <div class="col-12 col-sm-4">
+                  <div class="info-box bg-light">
+                    <div class="info-box-content text-center">
+                        <span class="description-percentage text-success"><i class="fas fa-caret-up"></i> 2500%</span>
+                        <h5 class="description-header">{{bot.cumulative_pnl}}</h5>
+                        <span class="description-text">NET PROFIT</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <div class="info-box bg-light">
+                    <div class="info-box-content text-center">
+                        <span class="description-percentage text-info"><i class="fas fa-exchange-alt"></i></span>
+                        <h5 class="description-header">{{ bot.positions|length }}</h5>
+                        <span class="description-text">CLOSED TRADES</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <div class="info-box bg-light">
+                    <div class="info-box-content text-center">
+                        <span class="description-percentage text-danger"><i class="fas fa-caret-down"></i> 12%</span>
+                        <h5 class="description-header">985</h5>
+                        <span class="description-text">MAX DRAWDOWN</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">List of Trades</h3>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                  <table id="orders" class="table table-bordered table-striped">
+                    <thead>
+                      <tr>
+                          <th>Trade #</th>
+                          <th>Type</th>
+                          <th>Signal</th>
+                          <th>Date/Time</th>
+                          <th>Price</th>
+                          <th>Contracts</th>
+                          <!-- <th>Exit Date/Time</th> -->
+                          <!-- <th>Exit Price</th> -->
+                          <th>Profit</th>
+                          <th>Cum. Profit</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                    {% for position in bot.positions %}
+                    <tr class="{{ 'table-success' if position.profit and position.profit > 0 else 'table-danger' }}">
+                        <td>{{ position.id }}</td>
+                        <td>
+                            Exit {{ position.position_type }} <br>
+                            Entry {{ position.position_type }}
+                          </td>
+                          <td>
+                            {{ position.position_type }} <br>
+                            {{ position.market_pos }}
+                          </td>
+                          <td>
+                            {{ position.closed_at }} <br>
+                            {{ position.opened_at }}
+                          </td>
+                          <td>
+                            {{ position.current_price }}<br>
+                            {{ position.average_entry_price }}
+                        </td>
+                        
+                        
+                          <td>{{ position.quantity }}</td>
+                          <td>
+                              {{ position.pnl | default('0') }} USDT
+                              <br>
+                              <small class="text-muted">{{ position.percentage_profit | default('0') }}%</small>
+                          </td>
+                          <td>
+                              {{ position.cumulative_profit | default('0') }} USDT
+                              <br>
+                              <small class="text-muted">{{ position.cumulative_percentage_profit | default('0') }}%</small>
+                          </td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Trade #</th>
+                            <th>Type</th>
+                            <th>Signal</th>
+                            <th>Date/Time</th>
+                            <th>Price</th>
+                            <th>Contracts</th>
+                            <!-- <th>Exit Date/Time</th> -->
+                            <!-- <th>Exit Price</th> -->
+                            <th>Profit</th>
+                            <th>Cum. Profit</th>
+                        </tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <!-- /.card-body -->
+              </div>
+            </div>
+            <div class="col-12 col-md-12 col-lg-4 order-1 order-md-2">
+ 
+              <h3 class="text-primary"><i class="fas fa-paint-brush"></i> AdminLTE v3</h3>
+              <p class="text-muted">Raw denim you probably haven't heard of them jean shorts Austin. Nesciunt tofu stumptown aliqua butcher retro keffiyeh dreamcatcher synth. Cosby sweater eu banh mi, qui irure terr.</p>
+              <br>
+              <div class="text-muted">
+                <p class="text-sm">Client Company
+                  <b class="d-block">Deveint Inc</b>
+                </p>
+                <p class="text-sm">Project Leader
+                  <b class="d-block">Tony Chicken</b>
+                </p>
+              </div>
+
+              <h5 class="mt-5 text-muted">Alert Message</h5>
+              <div class="json-container">
+                <button class="btn copy-btn btn-sm btn-default" onclick="copyToClipboard()"><i class="fas fa-copy"></i> Copy JSON</button>
+                <pre class="language-json"><code id="jsonCode" class="language-json">
+{
+    "passphrase": "MZXW633PN5XW6MZX",
+    "bot_id": "{{bot.id}}",
+    "bot_name": "{{bot.name}}",
+    "sandbox_mode": "False",
+    "time": "{{ '{{timenow}}' }}",
+    "exchange": "{{ '{{exchange}}' }}",
+    "symbol": "{{ '{{ticker}}' }}",
+    "order_id": "{{ '{{strategy.order.id}}' }}",
+    "order_price": {{ '{{strategy.order.price}}' }},
+    "order_side": "{{ '{{strategy.order.action}}' }}",
+    "order_size": {{ '{{strategy.order.contracts}}' }},
+    "pos_size": {{ '{{strategy.position_size}}' }},
+    "pos_type": "{{ '{{strategy.market_position}}' }}",
+    "type": "limit",
+    "timeframe": "{{ '{{interval}}' }}",
+    "params": "{{ '{{strategy.order.comment}}' }}"
+}
+                </code></pre>
+            </div>
+              
+
+              <h5 class="mt-5 text-muted">Project files</h5>
+              <ul class="list-unstyled">
+                <li>
+                  <a href="" class="btn-link text-secondary"><i class="far fa-fw fa-file-word"></i> Functional-requirements.docx</a>
+                </li>
+                <li>
+                  <a href="" class="btn-link text-secondary"><i class="far fa-fw fa-file-pdf"></i> UAT.pdf</a>
+                </li>
+                <li>
+                  <a href="" class="btn-link text-secondary"><i class="far fa-fw fa-envelope"></i> Email-from-flatbal.mln</a>
+                </li>
+                <li>
+                  <a href="" class="btn-link text-secondary"><i class="far fa-fw fa-image "></i> Logo.png</a>
+                </li>
+                <li>
+                  <a href="" class="btn-link text-secondary"><i class="far fa-fw fa-file-word"></i> Contract-10_12_2014.docx</a>
+                </li>
+              </ul>
+              <div class="text-center mt-5 mb-3">
+                <a href="#" class="btn btn-sm btn-primary">Add files</a>
+                <a href="#" class="btn btn-sm btn-warning">Report contact</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.card-body -->
+      </div>
+      <!-- /.card -->
+
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="/static/assets/js/demo.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/components/prism-json.min.js"></script>
+  <!-- DataTables -->
+  <script src="/static/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+  <script src="/static/assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+  <script src="/static/assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+    <!-- SweetAlert2 -->
+  <script src="/static/assets/plugins/sweetalert2/sweetalert2.min.js"></script>
+  <!-- Toastr -->
+  <!-- <script src="/static/assets/plugins/toastr/toastr.min.js"></script> -->
+  <!-- SweetAlert2 -->
+  <!-- <script src="sweetalert2.all.min.js"></script> -->
+   <!-- ChartJS -->
+   <script src="/static/assets/plugins/chart.js/Chart.min.js"></script>
+
+  <script>
+    $(function () {
+      $("#orders").DataTable({
+        "responsive": true,
+        "autoWidth": false,
+        "ordering": false,
+        "order": [[3, 'desc']] // Order by the third column as default
+      });
+      $('#example2').DataTable({
+        "paging": true,
+        "lengthChange": false,
+        "searching": false,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true,
+      });
+    });
+  </script>
+  <!-- Include jQuery and SweetAlert for the functionality -->
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script> -->
+
+<script>
+    $(function() {
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    
+        window.copyToClipboard = function() {
+            // Get the content from the element
+            var content = document.getElementById("jsonCode").innerText;
+            
+            // Create a temporary textarea
+            var tempInput = document.createElement("textarea");
+            tempInput.style.position = "absolute";
+            tempInput.style.left = "-9999px"; // Move it off-screen
+            tempInput.value = content; // Assign the content to be copied
+            document.body.appendChild(tempInput); // Append it to the body
+            tempInput.select(); // Select the content
+            document.execCommand("copy"); // Execute copy command
+            document.body.removeChild(tempInput); // Remove the temporary textarea
+            
+            Toast.fire({
+                icon: 'success',
+                title: 'Copied "Alert Message" to clipboard'
+            });
+        }
+    });
+</script>
+  <script>
+    // Example data extraction (This part should be dynamically generated based on your server-side language or JavaScript)
+    var labels = [];
+    var profitData = [];
+    var cumulativeProfitData = [];
+    
+    var positions = {{ bot.positions | tojson | safe }};
+    var cumulativeProfit = 0;
+  
+    positions.forEach(position => {
+      labels.push(`Trade ${position.id}`);  // Assuming the position ID is unique and sufficient as a label
+      profitData.push(position.pnl);
+      cumulativeProfit += position.pnl;
+      cumulativeProfitData.push(cumulativeProfit);
+    });
+  
+    // Chart.js chart initialization
+    var ctx = document.getElementById('comboChart').getContext('2d');
+    var comboChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Profit/Loss',
+                type: 'bar',
+                data: profitData,
+                backgroundColor: profitData.map(data => data >= 0 ? 'rgba(40, 235, 95, 0.2)' : 'rgba(255, 99, 132, 0.2)'),
+                borderColor: profitData.map(data => data >= 0 ? 'rgba(40, 235, 95, 1)' : 'rgba(255, 99, 132, 1)'),
+                borderWidth: 1
+            }, {
+                label: 'Cumulative Profit',
+                type: 'line',
+                data: cumulativeProfitData,
+                borderColor: 'rgb(245, 180, 6)',
+                borderWidth: 2,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false
+            }
+        }
+    });
+  </script>
+  
+{% endblock javascripts %}

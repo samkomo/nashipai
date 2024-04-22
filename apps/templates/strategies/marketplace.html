@@ -1,0 +1,430 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Projects {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+
+{% endblock stylesheets %}
+
+{% block content %}  
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Projects</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Projects</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+    <!-- {{strategies|tojson}} -->
+      <!-- Default box -->
+      <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Strategies</h3>
+                            <div class="card-tools">
+                                <!-- Trigger Modal Button -->
+                                <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addStrategyModal">
+                                    <i class="fas fa-plus"></i> Add New Strategy
+                                </button>
+                            </div>
+                        </div> 
+                          
+                        <div class="card-body">
+                          <table id="example1" class="table table-striped projects">
+                            <thead>
+                                <tr>
+                                    <th style="width: 30%">
+                                        Strategy Name
+                                    </th>
+                                    <th class="text-center">
+                                        Subscribers
+                                    </th>
+                                    <th class="text-center" style="width: 30%">
+                                        Backtest Perforamance
+                                    </th>
+                                    <th style="width: 15%" class="text-center">
+                                        User Review
+                                    </th>
+                                    <th class="text-right"  style="width: 20%">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            
+                            <tbody>
+                                {% for strategy in strategies %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('strategies_blueprint.get_strategy', strategy_id=strategy.id) }}" class="font-weight-bold">
+                                            {{ strategy.strategy_name }}
+                                        </a> <br>
+                                        <small>Coin Pair: {{ strategy.coin_pair }} | Timeframe: {{ strategy.time_frame }}</small>
+                                    </td>
+                                    
+                                    <td class="text-center">
+                                        {{ strategy.subscribers_count }} 
+                                    </td>
+                                    
+                                    <td class="project_progress text-center">
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar bg-green" role="progressbar" aria-valuenow="{{ strategy.performance_metrics.metrics.percent_profitable_all }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ strategy.performance_metrics.metrics.percent_profitable_all }}%">
+                                                ROI: {{ strategy.performance_metrics.metrics.percent_profitable_all }}% 
+                                            </div>
+                                        </div>
+                                        <small>
+                                            Closed Trades: {{ strategy.performance_metrics.metrics.total_closed_trades_all }} | P&L: {{ strategy.performance_metrics.metrics.net_profit_all }}/{{ strategy.performance_metrics.metrics.net_profit_percent_all }}% | Drawdown: {{ strategy.performance_metrics.metrics.max_drawdown }}/{{ strategy.performance_metrics.metrics.max_drawdown_percent }}%
+                                        </small>
+                                    </td>
+                                 
+                                    <td class="project-actions  text-center">
+                                        {% if strategy.average_rating %}
+                                            <div class="rating">
+                                                {% for i in range(5) %}
+                                                    {% if i < strategy.average_rating %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-warning"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {{ strategy.average_rating }} 
+                                            </div>
+                                            <small>Total Reviews: {{ strategy.reviews|length }}</small>
+                                        {% else %}
+                                            <small>No reviews yet</small>
+                                        {% endif %}
+                                    </td>
+                                    
+    
+                                    <td class="project-actions text-right">
+                                        {% if strategy.is_subscribed %}
+                                            <button class="btn btn-secondary btn-sm unsubscribe-btn" data-strategy-id="{{ strategy.id }}" data-toggle="modal" data-target="#unsubscribeModal">
+                                                <i class="fas fa-rss"></i> Unsubscribe
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-info btn-sm subscribe-btn" data-strategy-id="{{ strategy.id }}" data-toggle="modal" data-target="#subscribeModal">
+                                                <i class="fas fa-rss"></i> Subscribe
+                                            </button>
+                                        {% endif %}
+                                        
+                                        <button class="btn btn-danger btn-sm delete-btn" data-strategy-id="{{ strategy.id }}">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            
+                              
+                            <tfoot>
+                                <tr>
+                                    <th style="width: 25%">
+                                        Strategy Name
+                                    </th>
+                                    <th class="text-center">
+                                        Subscribers
+                                    </th>
+                                    <th class="text-center" style="width: 30%">
+                                        Backtest Perforamance
+                                    </th>
+                                    <th style="width: 15%" class="text-center">
+                                        User Review
+                                    </th>
+                                    <th  style="width: 20%" class="text-right">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                        <!-- /.card-body -->
+                      </div>
+                </div>
+            </div>
+      </div>
+      <!-- /.card -->
+
+        <!-- Modal -->
+        <div class="modal fade" id="addStrategyModal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Strategy</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="{{ url_for('strategies_blueprint.create_strategy') }}" method="post" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="strategyName">Strategy Name</label>
+                                <input type="text" class="form-control" id="strategyName" name="strategy_name" placeholder="Enter Strategy Name" required>
+                                <input type="hidden" name="next" value="strategies_blueprint.list_strategies">
+                            </div>
+                            <div class="form-group">
+                                <label for="strategyDescription">Description</label>
+                                <textarea class="form-control" id="strategyDescription" name="description" rows="3" placeholder="Enter Strategy Description"></textarea>
+                            </div>
+                            <!-- Custom File Input for Strategy Settings -->
+                            <div class="form-group">
+                                <label for="exampleInputFile">File input</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="exampleInputFile" name="settings_file">
+                                        <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save Strategy</button>
+                        </div>
+                    </form>                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Process Modal -->
+        <div class="modal fade" id="processModal" tabindex="-1" role="dialog" aria-labelledby="processModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="processModalLabel">Processing...</h5>
+                </div>
+                <div class="modal-body">
+                Please wait while we process your request.
+                </div>
+            </div>
+            </div>
+        </div>
+  
+        <!-- Subscription Modal -->
+        <div class="modal fade" id="subscriptionModal" tabindex="-1" role="dialog" aria-labelledby="subscriptionModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="subscriptionModalLabel">Subscribe to Strategy</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form id="subscriptionForm" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" id="strategyId" name="strategy_id">
+                            <div class="form-group">
+                                <label for="subscriptionType">Subscription Type</label>
+                                <select class="form-control" id="subscriptionType" name="subscription_type">
+                                    <option value="monthly">Monthly - $10</option>
+                                    <option value="yearly">Yearly - $100</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Subscribe</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="subscribeModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Subscribe to Strategy</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('strategies_blueprint.subscribe_strategy') }}" method="post">
+                            <div class="modal-body">
+                                <input type="hidden" id="strategyId" name="strategy_id">
+                                <div class="form-group">
+                                    <label for="subscriptionType">Subscription Type</label>
+                                    <select class="form-control" id="subscriptionType" name="subscription_type">
+                                        <option value="free">Free</option>
+                                        <option value="monthly">Monthly - $10</option>
+                                        <option value="yearly">Yearly - $100</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Subscribe</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="/static/assets/js/demo.js"></script>
+  <!-- DataTables -->
+  <script src="/static/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+  <script src="/static/assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+  <script src="/static/assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+  <script>
+    $(function () {
+      $("#example1").DataTable({
+        "responsive": true,
+        "autoWidth": true,
+      });
+      $('#example2').DataTable({
+        "paging": true,
+        "lengthChange": false,
+        "searching": false,
+        "ordering": false,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true,
+      });
+    });
+  </script>
+  <!-- Existing script tags -->
+  <script>
+    // Existing scripts
+    // Script for custom file input
+    $(".custom-file-input").on("change", function() {
+      var fileName = $(this).val().split("\\").pop();
+      $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+    });
+  </script>
+  <!-- Include jQuery and Toasts plugin as required -->
+  <script>
+    $(document).ready(function() {
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          var cssClass;
+          if ("{{ category }}" == "message") {
+            cssClass = "bg-primary"; // Default message
+          } else if ("{{ category }}" == "error") {
+            cssClass = "bg-danger"; // Error messages
+          } else if ("{{ category }}" == "warning") {
+            cssClass = "bg-warning"; // Warning messages
+          } else if ("{{ category }}" == "info") {
+            cssClass = "bg-info"; // Info messages
+          } else if ("{{ category }}" == "success") {
+            cssClass = "bg-success"; // Success messages
+          } else {
+            cssClass = "bg-secondary"; // Fallback for any other category
+          }
+  
+          $(document).Toasts('create', {
+            class: cssClass,
+            title: 'Alert',
+            autohide: true,
+            delay: 5000, // Adjust the delay as needed
+            body: '{{ message }}'
+          });
+        {% endfor %}
+      {% endwith %}
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        // Initialize modal for subscription
+        $('#subscribeModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var strategyId = button.data('strategy-id'); // Extract info from data-* attributes
+            var modal = $(this);
+            modal.find('.modal-body #strategyId').val(strategyId);
+        });
+
+        $('.unsubscribe-btn').click(function() {
+            var strategyId = $(this).data('strategy-id');
+            $('#processModal').modal('show'); // Show the processing modal
+            $.ajax({
+                type: 'POST',
+                url: '/strategies/unsubscribe/' + strategyId,
+                success: function(response) {
+                    window.location.reload(); // Reload the page to update the state
+                },
+                error: function(error) {
+                    alert('Error unsubscribing');
+                    console.log(error);
+                },
+                complete: function() {
+                    $('#processModal').modal('hide'); // Hide the modal after AJAX call completes
+                }
+            });
+        });
+    });
+    // Use event delegation for the delete buttons
+    $(document).on('click', '.delete-btn', function() {
+        var strategyId = $(this).data('strategy-id');
+        $('#processModal').modal('show'); // Show the processing modal
+        $.ajax({
+            type: "POST",
+            url: "/strategies/delete-strategy/" + strategyId,
+            success: function(response) {
+                // alert("Deleted successfully!");
+                location.reload(); // Reload the page to refresh data
+            },
+            error: function(xhr) {
+                alert("Deletion failed! Error: " + xhr.responseText);
+            },
+            complete: function() {
+                $('#processModal').modal('hide'); // Hide the modal after AJAX call completes
+            }
+        });
+    });
+</script>
+    
+
+    
+
+{% endblock javascripts %}

@@ -1,0 +1,106 @@
+Name,Value
+"__indicatorName","MLR Strategy @SMK"
+"Z score Length",97
+"RSI",17
+"CCI",50
+"DMI",32
+"AROON",37
+"EMA",55
+"Factor (SuperTrend)",3.2
+"AtrPeriod (SuperTrend)",2
+"𝛃1 (rsi)",1
+"𝛃2 (cci)",4
+"𝛃3 (dmi)",1
+"𝛃4 (aroon)",2
+"𝛃5 (ema)",5
+"𝛃6 (SuperTrend)",4
+"Step of learing",0.1
+"Timezones: Src","Exchange"
+"-> Dst","Exchange"
+"Srart From ",true
+"End To       ",false
+"Select Session Days",false
+"Mon",true
+"Tue",true
+"Wed",true
+"Thu",true
+"Fri",true
+"Sat",false
+"Sun",false
+"Session Start",false
+":",0
+"Session End ",false
+"1. ADX:",false
+"L",200
+"S",100
+"Lv",20
+"2. MACD:",false
+"Lf",12
+"Ls",26
+"3. Bar direction=Trade direction",false
+"4. Rising Volume",false
+"5. Rising/Falling MA:",false
+"Length",200
+"Bars",1
+"6. High/Low Filter:",false
+"Lookback",10
+"7. Maximum close change allowed on entry:",false
+"(％)",1
+"8. Minimum close change allowed on entry:",false
+"9. RSI:",false
+"OS",25
+"OB",75
+"10. MA:",false
+"Type","SMA"
+"11. EMA Difference:",false
+"EMA 1",30
+"EMA 2",60
+"13. M.Bias:",false
+"P",7
+"Take Profit Type","R:R"
+"Stop Loss Type","ATR"
+" Profit ％    ",4.5
+" Stop ％  ",1.5
+" Profit ＄    ",333
+" Stop ＄  ",100
+" ATR Period  ",40
+" Multiplier",3
+" Trailing ％  ",3
+" R:R    1:",1.5
+"Fixed RR",true
+" HH / LL   ",200
+"  LO / HI ",5
+"Add ％",false
+" MA Stop","SMA"
+" Len",15
+" Step",1.5
+" 𝐄𝐱𝐭𝐞𝐫𝐧𝐚𝐥 𝐒𝐨𝐮𝐫𝐜𝐞  ","close"
+" Long Deals    ",true
+" Short Deals",true
+" Wait End Deal ",true
+" Reverse Deals",false
+" ReEntry Deal  ",false
+" ReOpen Deal",false
+"Loss Streak   ",15
+"Win Streak   ",15
+"Row Loss InDay",3
+"DrawDown ％",10
+"InDay Loss ％ ",3
+"Daily Trades  ",10
+"Weekly Trades",50
+"     Order Size","EQUITY"
+"Use Net Profit",true
+"​🇪​​🇶​​🇺​​🇮​​🇹​​🇾​",10
+"​🇸​​🇮​​🇿​​🇪",1000
+"​🇨​​🇴​​🇳​​🇹​​🇷​​🇦​​🇨​​🇹​​🇸​",1
+"Take Profit LV 1",false
+"﻿",30
+"Take Profit LV 2",false
+"Take Profit LV 3",false
+"Take Profit LV 4",false
+"Take Profit LV 5",false
+"Stop Loss",false
+"𝐓𝐈𝐏 𝐅𝐨𝐫 𝐓𝐏","——⤴—⤴—⤴"
+" SL 0 Position",3
+"Breakeven on TP",3
+" CoolDown # Bars",0

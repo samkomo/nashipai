@@ -47,7 +47,7 @@ def login():
         
         if response['status'] == 'success':
             # Redirect to the default route after successful login
-            return redirect(url_for('home_blueprint.index'))
+            return redirect(url_for('strategies_blueprint.list_strategies'))
         else:
             # Display error message if authentication failed
             flash(response['message'], 'error')

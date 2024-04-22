@@ -8,7 +8,7 @@ from typing import Dict, Any, List, Optional
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-class TradingBot:
+class CCXTService:
     """
     A class for interacting with cryptocurrency exchanges using the CCXT library,
     enhanced with asynchronous operations, structured error handling, and logging.
@@ -20,14 +20,15 @@ class TradingBot:
         exchange (ccxt.Exchange): CCXT exchange instance (async version).
     """
 
-    def __init__(self, exchange_id: str, api_key: str, api_secret: str) -> None:
-        self.exchange_id: str = exchange_id.lower() 
+    def __init__(self, exchange_id: str, api_key: str, api_secret: str):
+        """Initializes the ccxt client class with exchange details and API credentials."""
+        self.exchange_id: str = exchange_id.lower()
         self.api_key: str = api_key
         self.api_secret: str = api_secret
         self.exchange: Optional[ccxt.Exchange] = None
 
-    async def initialize_exchange(self) -> None:
-        """Initializes the exchange with API credentials."""
+    async def initialize_exchange(self):
+        """Asynchronously initializes the exchange with API credentials."""
         if self.exchange is None:  # Check if the exchange has already been initialized
             try:
                 exchange_class = getattr(ccxt, self.exchange_id)()
@@ -43,16 +44,15 @@ class TradingBot:
             except Exception as e:
                 logger.error(f"An unexpected error occurred during exchange initialization: {e}")
                 raise
-            
 
     async def create_order(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Processes a trade order based on the given payload."""
         # Extracting order details from the payload
         symbol = payload.get('symbol', '').rstrip('.P')  # Remove trailing '.P' if present
         order_type = payload['type']
-        side = payload['side']
-        amount = payload['size']
-        price = payload.get('price', None)  # Price is only relevant for limit orders
+        side = payload['order_side']
+        amount = payload['order_size']
+        price = payload.get('order_price', None)  # Price is only relevant for limit orders
 
 
         try:

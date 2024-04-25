@@ -89,6 +89,7 @@ class Position(db.Model):
     trading_bot_id = db.Column(db.Integer, db.ForeignKey('trading_bots.id'), nullable=False)
     quantity = db.Column(db.Float, nullable=False)  # Current size of the position
     position_type = db.Column(db.String(20), nullable=False)  # e.g., long, short
+    position_signal = db.Column(db.String(20), nullable=False)  # e.g., TP 1, SL 1, 
     average_entry_price = db.Column(db.Float, nullable=False)  # Weighted average price of entered positions 
     current_price = db.Column(db.Float)  # Current market price of the asset
     status = db.Column(db.String(50), default='open')  # e.g., open, closed
@@ -121,6 +122,7 @@ class Position(db.Model):
             'id': self.id,
             'trading_bot_id': self.trading_bot_id,
             'quantity': self.quantity,
+            'position_signal': self.position_signal,
             'position_type': self.position_type,
             'average_entry_price': self.average_entry_price,
             'current_price': self.current_price,
@@ -204,6 +206,7 @@ class Position(db.Model):
 class Order(db.Model):
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(20), nullable=False)
     position_id = db.Column(db.Integer, db.ForeignKey('positions.id'), nullable=False)
     symbol = db.Column(db.String(20), nullable=False)
     order_type = db.Column(db.String(20), nullable=False)  # e.g., market, limit
@@ -226,6 +229,7 @@ class Order(db.Model):
         return {
             'id': self.id,
             'position_id': self.position_id,
+            'order_id':self.order_id,
             'symbol': self.symbol,
             'order_type': self.order_type,
             'side': self.side,

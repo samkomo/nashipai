@@ -80,10 +80,11 @@ class TradingService:
             symbol = payload['symbol']
             order_type = payload['type']
             side = payload['order_side']
-            amount = float(payload['order_size'])
+            quantity = float(payload['order_size'])
             price = float(payload['order_price']) if payload['order_price'] else None
             pos_type = payload['pos_type']
-            pos_size = payload['pos_size']
+            order_id = payload['order_id']
+            pos_signal = payload['params']
 
             
             # Create order on the exchange
@@ -101,13 +102,14 @@ class TradingService:
                 position = Position(
                     trading_bot_id=bot.id,
                     symbol=symbol,
+                    position_signal=pos_signal,
                     status='open',
                     position_type=pos_type,
-                    quantity=amount,
+                    quantity=quantity,
                     average_entry_price=price,  # Initialize with the first price if it's a new position
                     current_price=price
                 )
-                # Position(trading_bot_id=bot.id, symbol=symbol, position_type=pos_type, average_entry_price=price, quantity=amount)
+                # Position(trading_bot_id=bot.id, symbol=symbol, position_type=pos_type, average_entry_price=price, quantity=quantity)
             else:
                 # Update existing position
                 if pos_type == 'flat':
@@ -115,6 +117,7 @@ class TradingService:
                     position.status = 'closed'
                     position.closed_at = datetime.utcnow()
                     position.current_price = price
+                    position.position_signal=pos_signal
                     # Calculate PnL
                     # if position.position_type == 'long':
                     #     position.pnl = (price - position.average_entry_price) * position.quantity
@@ -124,20 +127,21 @@ class TradingService:
                     # Adjust position size and recalculate average price
                     if side == 'buy':
                         if position.position_type == 'long':
-                            # total_quantity = position.quantity + amount
-                            # if total_quantity > 0:
-                            position.average_entry_price = (position.average_entry_price * position.quantity + price * amount) / total_quantity
-                            # position.quantity = total_quantity
+                            total_quantity = position.quantity + quantity
+                            if total_quantity > 0:
+                                position.average_entry_price = (position.average_entry_price * position.quantity + price * quantity) / total_quantity
+                                position.quantity = total_quantity
                         # elif position.position_type == 'short':
-                            # position.quantity -= amount
+                        #     position.quantity -= quantity
                     elif side == 'sell':
-                        # if position.position_type == 'long':
-                            # position.quantity -= amount
-                        # elif position.position_type == 'short':
-                            # total_quantity = position.quantity - amount
-                            # if total_quantity < 0:
-                            position.average_entry_price = (position.average_entry_price * -position.quantity + price * amount) / -total_quantity
-                            # position.quantity = total_quantity
+                        if position.position_type == 'short':
+                            total_quantity = position.quantity - quantity
+                            if total_quantity > 0:
+                                position.average_entry_price = (position.average_entry_price * position.quantity + price * quantity) / total_quantity
+                                position.quantity = total_quantity
+                        # elif position.position_type == 'long':
+                        #     position.quantity -= quantity
+                        
 
             # Save the updated position to the database
             db.session.add(position)
@@ -149,8 +153,9 @@ class TradingService:
                 position_id=position.id if position else None,
                 symbol=symbol,
                 order_type=order_type,
+                order_id=order_id,
                 side=side,
-                quantity=amount,
+                quantity=quantity,
                 entry_price=price,
                 status= "Executed" #order['status']
             )

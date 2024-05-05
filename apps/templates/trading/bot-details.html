@@ -130,8 +130,8 @@
                 <div class="col-12 col-sm-4">
                   <div class="info-box bg-light">
                     <div class="info-box-content text-center">
-                        <span class="description-percentage text-success"><i class="fas fa-caret-up"></i> 2500%</span>
-                        <h5 class="description-header">{{bot.cumulative_pnl}}</h5>
+                        <span class="description-percentage text-success"><i class="fas fa-caret-up"></i> {{bot.total_percent_profit_loss}}%</span>
+                        <h5 class="description-header">{{bot.total_profit_loss}}</h5>
                         <span class="description-text">NET PROFIT</span>
                     </div>
                   </div>
@@ -178,19 +178,19 @@
                   </thead>
                   <tbody>
                     {% for position in bot.positions %}
-                    <tr class="{{ 'table-success' if position.pnl > 0 else 'table-danger' }}">
+                    <tr class="{{ 'table-success' if position.profit_loss > 0 else 'table-danger' }}">
                         <td>{{ position.id }}</td>
                         <td>
-                            Exit {{ position.position_type }} <br>
-                            Entry {{ position.position_type }}
+                            Exit {{ position.pos_type }} <br>
+                            Entry {{ position.pos_type }}
                           </td>
                           <td>
-                            {{ position.position_type }} <br>
-                            {{ position.market_pos }}
+                            {{ position.status }} <br>
+                            {{ position.pos_type }}
                           </td>
                           <td>
                             {{ position.closed_at  if position.closed_at not in (None, 'None', '') else 'Open'}} <br>
-                            {{ position.opened_at }}
+                            {{ position.created_at }}
                           </td>
                           <td>
                             {{ position.current_price }}<br>
@@ -200,9 +200,9 @@
                         
                           <td>{{ position.quantity }}</td>
                           <td>
-                              {{ position.pnl | default('0') }} USDT
+                              {{ position.profit_loss | default('0') }} USDT
                               <br>
-                              <small class="text-muted">{{ position.percentage_profit | default('0') }}%</small>
+                              <small class="text-muted">{{ position.percent_profit_loss | default('0') }}%</small>
                           </td>
                           <td>
                               {{ position.cumulative_profit | default('0') }} USDT
@@ -399,8 +399,8 @@
   
     positions.forEach(position => {
       labels.push(`Trade ${position.id}`);  // Assuming the position ID is unique and sufficient as a label
-      profitData.push(position.pnl);
-      cumulativeProfit += position.pnl;
+      profitData.push(position.profit_loss);
+      cumulativeProfit += position.profit_loss;
       cumulativeProfitData.push(cumulativeProfit);
     });
   

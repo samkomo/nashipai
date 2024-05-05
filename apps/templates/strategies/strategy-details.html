@@ -547,7 +547,7 @@
                     response.forEach(function(account) {
                         exchangeSelect.append($('<option>', {
                             value: account.id,
-                            text: account.name
+                            text: account.account_name
                         }));
                         
                         accountsData[account.id] = account;  // Store account data
@@ -569,7 +569,7 @@
             // Update API Key and Secret Key fields
             if(selectedAccount) {
                 $('#apiKey').val(selectedAccount.api_key);
-                $('#apiSecret').val(selectedAccount.secret_key);
+                $('#apiSecret').val(selectedAccount.api_secret);
             } else {
                 $('#apiKey').val('');
                 $('#apiSecret').val('');

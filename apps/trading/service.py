@@ -59,6 +59,20 @@ class TradingService:
             logger.error("Trade details should be a dictionary")
             return {'status': 'error', 'message': 'Invalid trade details format'}
         
+        symbol = payload['symbol']
+        order_type = payload['type']
+        side = payload['order_side']
+        quantity = float(payload['order_size'])
+        order_price = float(payload['order_price']) if payload['order_price'] else None
+        pos_type = payload['pos_type']
+        order_id = payload['order_id']
+        params = payload['params']
+        time = payload['time']
+        exchange = payload['exchange']
+        pos_size = payload['pos_size']
+        timeframe = payload['timeframe']
+        bot_name = payload['bot_name']
+
         ccxt_client = None
         try:
             # Extract details, find bot and account, initialize exchange
@@ -68,101 +82,60 @@ class TradingService:
             bot = TradingBot.query.get(bot_id)
             if not bot:
                 return {'status': 'error', 'message': 'Trading bot not found'}
-            # if bot.user_id != user_id:
-            #     return {'status': 'error', 'message': 'Current user is not authorized to run this bot'}
 
             logger.info(f"Bot ID: {bot.id}")
 
             account = bot.account
-            ccxt_client = CCXTService(account.exchange.name, account.api_key, account.secret_key)
+            ccxt_client = CCXTService(account.exchange.name, account.api_key, account.api_secret)
             await ccxt_client.initialize_exchange()  # Properly await the asynchronous initialization
 
-            symbol = payload['symbol']
-            order_type = payload['type']
-            side = payload['order_side']
-            quantity = float(payload['order_size'])
-            price = float(payload['order_price']) if payload['order_price'] else None
-            pos_type = payload['pos_type']
-            order_id = payload['order_id']
-            pos_signal = payload['params']
 
-            
-            # Create order on the exchange
-            # order = await ccxt_client.create_order(payload)
-            # logger.info(f"Order created: {order.id}")
-            
-
-            # Manage Position Logic
-            position = Position.query.filter_by(trading_bot_id=bot.id, symbol=symbol, status='open').first()
+            # Get or create the associated position
+            position = Position.query.filter_by(symbol=payload['symbol'], trading_bot_id=payload['bot_id'], status='open').first()
+            is_new_position = False
             if not position:
-                if pos_type == 'flat':
-                    # Cannot close a non-existent position
-                    return {'status': 'error', 'message': 'No open position to close'}
-                # Create a new position if it does not exist and it's not a closure request
                 position = Position(
-                    trading_bot_id=bot.id,
-                    symbol=symbol,
-                    position_signal=pos_signal,
-                    status='open',
-                    position_type=pos_type,
-                    quantity=quantity,
-                    average_entry_price=price,  # Initialize with the first price if it's a new position
-                    current_price=price
+                    trading_bot_id=payload['bot_id'],
+                    symbol=payload['symbol'],
+                    pos_type=payload['pos_type'],
+                    average_entry_price=payload['order_price'] if payload['order_side'] == 'buy' else None,
+                    position_size=payload['pos_size'],
+                    status='open'
                 )
-                # Position(trading_bot_id=bot.id, symbol=symbol, position_type=pos_type, average_entry_price=price, quantity=quantity)
-            else:
-                # Update existing position
-                if pos_type == 'flat':
-                    # Closing the position
-                    position.status = 'closed'
-                    position.closed_at = datetime.utcnow()
-                    position.current_price = price
-                    position.position_signal=pos_signal
-                    # Calculate PnL
-                    # if position.position_type == 'long':
-                    #     position.pnl = (price - position.average_entry_price) * position.quantity
-                    # elif position.position_type == 'short':
-                    #     position.pnl = (position.average_entry_price - price) * position.quantity
-                else:
-                    # Adjust position size and recalculate average price
-                    if side == 'buy':
-                        if position.position_type == 'long':
-                            total_quantity = position.quantity + quantity
-                            if total_quantity > 0:
-                                position.average_entry_price = (position.average_entry_price * position.quantity + price * quantity) / total_quantity
-                                position.quantity = total_quantity
-                        # elif position.position_type == 'short':
-                        #     position.quantity -= quantity
-                    elif side == 'sell':
-                        if position.position_type == 'short':
-                            total_quantity = position.quantity - quantity
-                            if total_quantity > 0:
-                                position.average_entry_price = (position.average_entry_price * position.quantity + price * quantity) / total_quantity
-                                position.quantity = total_quantity
-                        # elif position.position_type == 'long':
-                        #     position.quantity -= quantity
-                        
-
-            # Save the updated position to the database
-            db.session.add(position)
-            # Commit changes to the database
-            db.session.commit()
-                
-            # Save the order details
-            new_order = Order(
-                position_id=position.id if position else None,
+                db.session.add(position)
+                db.session.flush()
+                is_new_position = True
+            
+            # Create and execute the order
+            order = Order(
+                order_id=order_id,
+                position_id=position.id,
                 symbol=symbol,
                 order_type=order_type,
-                order_id=order_id,
                 side=side,
                 quantity=quantity,
-                entry_price=price,
-                status= "Executed" #order['status']
+                entry_price=order_price,
+                status='filled',  # Default status before execution
+                created_at=time,
+                bot_id=bot_id,
+                bot_name=bot_name,
+                exchange=exchange,
+                pos_size=pos_size,
+                pos_type=pos_type,
+                timeframe=timeframe,
+                params=params
             )
-            db.session.add(new_order)
+            db.session.add(order)
+            db.session.flush()  # Necessary to ensure the order is persisted before calculation
+
+            # Only update position if it wasn't newly created
+            if not is_new_position:
+                position.update_position(order)
+            position.calculate_profit_loss(order, account.maker_fee)  # Calculate profit/loss upon order execution regardless of new or existing
+
             db.session.commit()
 
-            return {'status': 'success', 'message': 'Order executed and position updated.', 'order_id': new_order.id}
+            return {'status': 'success', 'message': 'Order executed and position updated.', 'order_id': order.id}
         except Exception as e:
             logger.error(f"An error occurred: {e}")
             db.session.rollback()

@@ -57,10 +57,10 @@
                   <table id="#example1" class="table table-bordered table-hover">
                     <thead>
                       <tr>
-                        <th>Name</th>
+                        <th>Bot Name</th>
                         <th>Strategy</th>
-                        <th>Exchange Account</th>
-                        <th>Profit/Loss</th>
+                        <th>Trading Account</th>
+                        <th>Profit & Loss</th>
                         <th>Win Rate</th>
                         <th class="text-center">Actions</th>
                     </tr>
@@ -72,22 +72,41 @@
                             <a href="{{ url_for('trading_blueprint.view_bot', bot_id=bot.id) }}" class="font-weight-bold">
                                 {{ bot.name }}
                             </a> <br>
-                            <small>Created: {{ bot.days_running }} days ago</small>
+                            <small>
+                              <i class="fa fa-calendar-alt" style="color: #FFA500;"></i> {{ bot.days_running }} days ago |
+                          
+                              <!-- Conditional rendering for the status icon based on bot.status -->
+                              {% if bot.status == 'active' %}
+                                  <i class="fa fa-circle" style="color: #00FF00;" aria-label="Active Status"></i> Active
+                              {% elif bot.status == 'inactive' %}
+                                  <i class="fa fa-circle" style="color: #FF0000;" aria-label="Inactive Status"></i> Inactive
+                              {% elif bot.status == 'error' %}
+                                  <i class="fa fa-exclamation-circle" style="color: #FF0000;" aria-label="Error Status"></i> Error
+                              {% else %}
+                                  <i class="fa fa-circle-notch" style="color: #FFA500;" aria-label="Unknown Status"></i> Unknown
+                              {% endif %}
+                          </small>
+                          
+                          
+                          
                         </td>
                         <td>
                           <a href="{{ url_for('strategies_blueprint.get_strategy', strategy_id=bot.strategy.id) }}" class="font-weight-bold">
                               {{ bot.strategy.name }}
                           </a> <br>
-                            <small>{{ bot.strategy.coin_pair }} | {{ bot.strategy.time_frame }}</small>
+                            <small>
+                              <!-- <img src="/static/assets/icons/{{ bot.strategy.coin_pair | upper }}@2x.png" alt="{{ bot.strategy.coin_pair }} Icon" style="height: 20px; margin-right: 5px;">  -->
+                              {{ bot.strategy.coin_pair }} | {{ bot.strategy.time_frame }}
+                            </small>
                         </td>
-                        <td>{{ bot.account.name }} <br>
-                            <small>Exchange: {{ bot.account.exchange_name }}</small>
+                        <td>{{ bot.account.account_name }} <br>
+                            <small>Exchange: {{ bot.account.exchange_name }} </small>
                         </td>
-                        <td>{{ bot.status }}</td>
+                        <td>{{ bot.total_profit_loss }} USDT</td>
                         <td class="project_progress text-center">
                           <div class="progress progress-sm">
-                              <div class="progress-bar bg-green" role="progressbar" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100" style="width: 82%">
-                                  ROI: % 
+                              <div class="progress-bar bg-green" role="progressbar" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100" style="width: {{bot.win_rate}}%">
+                                  {{bot.win_rate}} % 
                               </div>
                           </div>
                           <small>

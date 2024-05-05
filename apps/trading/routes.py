@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from flask import request, jsonify, redirect, url_for, flash, render_template
@@ -5,6 +6,8 @@ from flask_login import current_user, login_required
 from apps.trading.service import TradingService
 from apps.trading import blueprint
 from typing import Tuple, Dict, Any
+
+from apps.trading.utillity import  send_message_to_queue
 
 logger = logging.getLogger(__name__)
 EXPECTED_PASSPHRASE = os.environ.get('WEBHOOK_PASSPHRASE')
@@ -84,21 +87,23 @@ async def webhook() -> Tuple[Dict[str, Any], int]:
     required_fields = ['exchange', 'symbol', 'order_price', 'order_size', 'order_side', 'pos_size', 'pos_type', 'bot_id','type']
     if any(field not in payload for field in required_fields):
         return jsonify({"errorCode": "missing_field", "message": "Missing required field(s)"}), 400
+    
+    # send_message_to_queue(str(payload))
+
+    # return jsonify({"message": "Order received and queued"}), 200
 
     try:
         logger.info(f"Moving to TradingService")
         response = await TradingService.process_order(payload)
-        if response['status'] == 'success':
-            logger.info(f"{response['status']}: {response['message']}")
-            return render_template('trading/bot-details.html', bot=response['message'])
-        else:
-            flash(response['message'], 'warning')
-            logger.error(f"{response['status']}: {response['message']}")
-            return redirect(url_for('trading_blueprint.list_bots'))
+        # if response['status'] == 'success':
+        logger.info(f"{response['status']}: {response['message']}")
+            # return render_template('trading/bot-details.html', bot=response['message'])
+        return jsonify(response), 200
+
     except Exception as e:
         flash(f'Error fetching bot details: {str(e)}', 'error')
         logger.error(f"Exception: {str(e)}")
-        return redirect(url_for('trading_blueprint.list_bots'))
+        return jsonify(str(e))
 
 
 @blueprint.route('/activate_bot/<int:bot_id>', methods=['POST'])

@@ -1,3 +1,4 @@
+import datetime
 from apps import db
 
 class Exchange(db.Model):
@@ -67,72 +68,87 @@ class Exchange(db.Model):
         if commit:
             db.session.commit()
 
-
-
 class Account(db.Model):
     __tablename__ = 'accounts'
+
     id = db.Column(db.Integer, primary_key=True)
-    exchange_id = db.Column(db.Integer, db.ForeignKey('exchanges.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False)  # Name to identify the account
+    exchange_id = db.Column(db.Integer, db.ForeignKey('exchanges.id'), nullable=False)
+    account_name = db.Column(db.String(50), nullable=True)
     api_key = db.Column(db.String(255), nullable=False)
-    secret_key = db.Column(db.String(255), nullable=False)
-    password = db.Column(db.String(255), nullable=True)  # Required for some exchanges
-    sandbox_mode = db.Column(db.Boolean, default=False)  # Indicates if this account uses the exchange's sandbox environment
-    additional_info = db.Column(db.JSON, nullable=True)  # Any other necessary details
+    api_secret = db.Column(db.String(255), nullable=False)
+    api_permissions = db.Column(db.String(255), nullable=True)  # Simplified to db.String type
+    status = db.Column(db.String(50), nullable=False, default='active')
+    balance = db.Column(db.Float, nullable=True)  # Assuming balance can be represented as a db.Float
+    open_orders = db.Column(db.Integer, nullable=True)  # Assuming number of open orders
+    closed_orders = db.Column(db.Integer, nullable=True)  # Assuming number of closed orders
+    transaction_history = db.Column(db.String(255), nullable=True)  # Simplify to a db.String or URL/link
+    taker_fee = db.Column(db.Float, nullable=True)
+    maker_fee = db.Column(db.Float, nullable=True)
+    margin_info = db.Column(db.String(255), nullable=True)  # Assuming a simple db.String can describe the margin info
+    last_accessed = db.Column(db.DateTime, nullable=True)
+    last_api_error = db.Column(db.String(255), nullable=True)
+    rate_limit_status = db.Column(db.String(255), nullable=True)  # Assuming simple status descriptions
+    encryption_data = db.Column(db.String(255), nullable=True)  # Assuming encryption key or method description
 
     exchange = db.relationship('Exchange', back_populates='accounts')
 
+    def __init__(self, user_id, account_name, api_key, api_secret, api_permissions=None, status='active'):
+        self.user_id = user_id
+        self.account_name = account_name
+        self.api_key = api_key
+        self.api_secret = api_secret
+        self.api_permissions = api_permissions
+        self.status = status
+        self.last_accessed = datetime.now()  # Set last accessed time to current time at creation
 
     def to_dict(self):
-        """Serialize account details to a dictionary for API responses, excluding sensitive information."""
         return {
             'id': self.id,
-            'name': self.name,
-            'exchange_id': self.exchange_id,
             'user_id': self.user_id,
+            'account_name': self.account_name,
             'api_key': self.api_key,
-            'secret_key': self.secret_key,
-            'password': self.password,
-            'sandbox_mode': self.sandbox_mode,
-            'additional_info': self.additional_info
+            'api_secret': self.api_secret,
+            'api_permissions': self.api_permissions,
+            'status': self.status,
+            'balance': self.balance,
+            'open_orders': self.open_orders,
+            'closed_orders': self.closed_orders,
+            'transaction_history': self.transaction_history,
+            'taker_fee': self.taker_fee,
+            'maker_fee': self.maker_fee,
+            'margin_info': self.margin_info,
+            'last_accessed': self.last_accessed.isoformat() if self.last_accessed else None,
+            'last_api_error': self.last_api_error,
+            'rate_limit_status': self.rate_limit_status,
+            'encryption_data': self.encryption_data
         }
+
     
     def to_dict_bot(self):
         """Serialize account details to a dictionary for API responses, excluding sensitive information."""
         return {
             'id': self.id,
-            'name': self.name,
-            'exchange_id': self.exchange_id,
             'user_id': self.user_id,
+            'account_name': self.account_name,
             'api_key': self.api_key,
-            'secret_key': self.secret_key,
-            'password': self.password,
-            'sandbox_mode': self.sandbox_mode,
-            'additional_info': self.additional_info,
+            'api_secret': self.api_secret,
+            'api_permissions': self.api_permissions,
+            'status': self.status,
+            'balance': self.balance,
+            'open_orders': self.open_orders,
+            'closed_orders': self.closed_orders,
+            'transaction_history': self.transaction_history,
+            'taker_fee': self.taker_fee,
+            'maker_fee': self.maker_fee,
+            'margin_info': self.margin_info,
+            'last_accessed': self.last_accessed.isoformat() if self.last_accessed else None,
+            'last_api_error': self.last_api_error,
+            'rate_limit_status': self.rate_limit_status,
+            'encryption_data': self.encryption_data,
             'exchange_name': self.exchange.name
             
         }
-
-    def __repr__(self):
-        return f'<Account {self.name} on Exchange {self.exchange.name}>'
-
-    @classmethod
-    def create_account(cls, exchange_id, name, api_key, secret_key, password=None, sandbox_mode=False, additional_info=None, commit=True):
-        """Class method to create and save a new account."""
-        new_account = cls(
-            exchange_id=exchange_id,
-            name=name,
-            api_key=api_key,
-            secret_key=secret_key,
-            password=password,
-            sandbox_mode=sandbox_mode,
-            additional_info=additional_info
-        )
-        db.session.add(new_account)
-        if commit:
-            db.session.commit()
-        return new_account
 
     @classmethod
     def find_by_id(cls, account_id):

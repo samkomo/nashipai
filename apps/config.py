@@ -54,6 +54,10 @@ class Config(object):
 
         # This will create a file in <app> FOLDER
         SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite3') 
+
+    # RabbitMQ Configuration
+    CLOUDAMQP_URL = os.getenv('CLOUDAMQP_URL', 'your-default-cloudamqp-url-if-any')
+
     
 class ProductionConfig(Config):
     DEBUG = False

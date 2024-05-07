@@ -152,7 +152,7 @@ class Position(db.Model):
         if self.position_size == 0 or order.pos_type == 'flat':
             self.status = 'closed'
             self.closed_at = datetime.utcnow()
-            self.exit_price = order.price
+            self.exit_price = order.entry_price
 
         db.session.commit()
 
@@ -196,7 +196,7 @@ class Position(db.Model):
         if self.position_size == 0 or order.pos_type == 'flat':
             self.status = 'closed'
             self.closed_at = datetime.utcnow()
-            self.exit_price = order.price
+            self.exit_price = order.entry_price
 
         db.session.commit()
 

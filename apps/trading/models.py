@@ -30,6 +30,17 @@ class TradingBot(db.Model):
     def total_percent_profit_loss(self):
         return sum(position.percent_profit_loss for position in self.positions if position.status == 'closed')
     
+    @property
+    def closed_trades_count(self):
+        # Count positions with status 'closed'
+        return sum(1 for position in self.positions if position.status == 'closed')
+    
+    @property
+    def has_open_position(self):
+        # Return True if any position is open
+        return any(position.status == 'open' for position in self.positions)
+
+
     def calculate_win_rate(self):
         closed_positions = [p for p in self.positions if p.status == 'closed']
         if not closed_positions:
@@ -58,6 +69,8 @@ class TradingBot(db.Model):
             'total_profit_loss': self.total_profit_loss,  # Add cumulative PnL to the serialized output
             'total_percent_profit_loss': self.total_percent_profit_loss,  # Add cumulative PnL to the serialized output
             'win_rate': self.calculate_win_rate(),  # Include win rate in the dictionary
+            'closed_trades': self.closed_trades_count,
+            'has_open_position': self.has_open_position,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
             'days_running': days_running
         }
@@ -112,6 +125,7 @@ class Position(db.Model):
     closed_at = db.Column(db.DateTime, nullable=True)
     profit_loss = db.Column(db.Float, default=0.0)
     percent_profit_loss = db.Column(db.Float, default=0.0)  # New column for percent profit or loss
+    exit_price=db.Column(db.Float, nullable=True)
 
     # Relationships
     orders = db.relationship('Order', back_populates='position')
@@ -138,6 +152,7 @@ class Position(db.Model):
         if self.position_size == 0 or order.pos_type == 'flat':
             self.status = 'closed'
             self.closed_at = datetime.utcnow()
+            self.exit_price = order.price
 
         db.session.commit()
 
@@ -181,6 +196,7 @@ class Position(db.Model):
         if self.position_size == 0 or order.pos_type == 'flat':
             self.status = 'closed'
             self.closed_at = datetime.utcnow()
+            self.exit_price = order.price
 
         db.session.commit()
 
@@ -195,14 +211,13 @@ class Position(db.Model):
     def is_open(self):
         return self.status == 'open'
 
-    # @hybrid_property
-    # def position_size(self):
-    #     """Calculate net position size accounting for buys and sells."""
-    #     size = sum(order.quantity for order in self.orders if order.side == 'buy' and order.status == 'filled') \
-    #          - sum(order.quantity for order in self.orders if order.side == 'sell' and order.status == 'filled')
-    #     if self.pos_type == 'short':
-    #         size = -size
-    #     return size
+    @hybrid_property
+    def total_position_size(self):
+        """Calculate net position size accounting for buys and sells."""
+        size = sum(order.quantity for order in self.orders if order.side == 'buy' and order.pos_type == 'long')  or sum(order.quantity for order in self.orders if order.side == 'sell' and order.pos_type == 'short')
+        # if self.pos_type == 'short':
+        #     size = -size
+        return size
 
     # @hybrid_property
     # def average_entry_price(self):
@@ -284,8 +299,9 @@ class Position(db.Model):
             'status': self.status,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'closed_at': self.closed_at.isoformat() if self.closed_at else None,
-            'position_size': self.position_size,
+            'position_size': self.total_position_size,
             'average_entry_price': self.average_entry_price,
+            'exit_price': self.exit_price,
             'profit_loss': self.profit_loss,
             'percent_profit_loss': self.percent_profit_loss  # Include the percentage profit or loss
         }

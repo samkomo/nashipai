@@ -130,8 +130,8 @@
                 <div class="col-12 col-sm-4">
                   <div class="info-box bg-light">
                     <div class="info-box-content text-center">
-                        <span class="description-percentage text-success"><i class="fas fa-caret-up"></i> {{bot.total_percent_profit_loss}}%</span>
-                        <h5 class="description-header">{{bot.total_profit_loss}}</h5>
+                        <span class="description-percentage text-success"><i class="fas fa-caret-up"></i> {{"{:.2f}".format(bot.total_percent_profit_loss)}}%</span>
+                        <h5 class="description-header">{{"{:.2f}".format(bot.total_profit_loss)}}</h5>
                         <span class="description-text">NET PROFIT</span>
                     </div>
                   </div>
@@ -193,16 +193,16 @@
                             {{ position.created_at }}
                           </td>
                           <td>
-                            {{ position.current_price }}<br>
+                            {{ position.exit_price }}<br>
                             {{ position.average_entry_price }}
                         </td>
                         
                         
-                          <td>{{ position.quantity }}</td>
+                          <td>{{ position.position_size }}</td>
                           <td>
-                              {{ position.profit_loss | default('0') }} USDT
+                              {{ "{:.2f}".format(position.profit_loss) | default('0') }} USDT
                               <br>
-                              <small class="text-muted">{{ position.percent_profit_loss | default('0') }}%</small>
+                              <small class="text-muted">{{ "{:.2f}".format(position.percent_profit_loss) | default('0') }}%</small>
                           </td>
                           <td>
                               {{ position.cumulative_profit | default('0') }} USDT

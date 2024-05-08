@@ -20,7 +20,7 @@ def list_bots():
     response = TradingService.list_bots(user_id)
     
     if response['status'] == 'success':
-        return render_template('trading/bots.html', bots=response['data'])
+        return render_template('trading/bots.html', data=response['data'])
     else:
         logger.error(f"Failed to list trading bots for user {user_id}: {response['message']}")
         flash(response['message'], 'error')

@@ -15,7 +15,22 @@ class TradingService:
         try:
             bots = TradingBot.query.filter_by(user_id=user_id).all()
             bots_data = [bot.to_dict() for bot in bots]  # Convert each bot instance to a dictionary
-            return {'status': 'success', 'message': 'Bots retrieved successfully.', 'data': bots_data}
+            # Calculate total profit/loss and percentage
+            total_profit_loss = sum(bot.total_profit_loss for bot in bots)
+            total_percent_profit_loss = sum(bot.total_percent_profit_loss for bot in bots) / len(bots) if bots else 0
+
+            # Create a new dictionary to store total data
+            totals = {
+                'total_profit_loss': total_profit_loss,
+                'total_percent_profit_loss': total_percent_profit_loss
+            }
+
+            # Append totals to the bot_data list
+            all_data = {
+                'bots': bots_data,
+                'totals': totals
+            }
+            return {'status': 'success', 'message': 'Bots retrieved successfully.', 'data': all_data}
         except Exception as e:
             logger.error(f'Error retrieving bots for user {user_id}: {str(e)}')
             return {'status': 'error', 'message': str(e)}

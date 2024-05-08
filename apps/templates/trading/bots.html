@@ -29,7 +29,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Trading Bots</h1>
+            <h1>Incubator</h1>
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
@@ -40,7 +40,7 @@
         </div>
       </div><!-- /.container-fluid -->
     </section>
-    <!-- {{bots|tojson}} -->
+    <!-- {{data|tojson}} -->
 
     <!-- Main content -->
     <section class="content">
@@ -50,11 +50,11 @@
             <div class="col-12">
               <div class="card">
                 <div class="card-header">
-                  <h3 class="card-title">Expandable Table</h3>
+                  <h3 class="card-title">Trading Bots</h3>
                 </div>
                 <!-- ./card-header -->
                 <div class="card-body">
-                  <table id="#example1" class="table table-bordered table-hover">
+                  <table id="#bots" class="table table-bordered table-hover">
                     <thead>
                       <tr>
                         <th>Bot Name</th>
@@ -63,10 +63,10 @@
                         <th>Profit/Loss</th>
                         <th>Win Rate</th>
                         <th class="text-center">Actions</th>
-                    </tr>
+                      </tr>
                     </thead>
                     <tbody>
-                      {% for bot in bots %}
+                      {% for bot in data.bots %}
                       <tr>
                         <td>
                             <a href="{{ url_for('trading_blueprint.view_bot', bot_id=bot.id) }}" class="font-weight-bold">
@@ -173,7 +173,35 @@
                         </td>
                       </tr> -->
                       {% endfor %}
+                      <!-- Add Total Row -->
+                      <tr>
+                        <td colspan="3" class="text-right"><strong>Total Profit/Loss: <br> ROI: </strong></td>
+                        <td>
+                          ${{ "{:.2f}".format(data.totals.total_profit_loss) }}  <br>
+                          <span class="description-percentage
+                            {% if data.totals.total_percent_profit_loss > 0 %}text-success
+                            {% elif data.totals.total_percent_profit_loss < 0 %}text-danger
+                            {% else %}text-secondary{% endif %}">
+                            <i class="fas 
+                            {% if data.totals.total_percent_profit_loss > 0 %}fa-caret-up
+                            {% elif data.totals.total_percent_profit_loss < 0 %}fa-caret-down
+                            {% else %}fa-circle{% endif %}"></i>
+                            {{"{:.2f}".format(data.totals.total_percent_profit_loss)}}%
+                          </span>
+                        </td>
+                        <td colspan="2"></td>
+                      </tr>
                     </tbody>
+                    <!-- <tfoot>
+                      <tr>
+                        <th>Bot Name</th>
+                        <th>Strategy</th>
+                        <th>Trading Account</th>
+                        <th>Profit/Loss</th>
+                        <th>Win Rate</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                  </tfoot> -->
                   </table>
                 </div>
                 <!-- /.card-body -->
@@ -211,19 +239,25 @@
   <!-- page script -->
   <script>
     $(function () {
-      $("#example1").DataTable({
+      $("#bots").DataTable({
         "responsive": true,
         "autoWidth": false,
-      });
-      $('#example2').DataTable({
-        "paging": true,
-        "lengthChange": false,
-        "searching": false,
         "ordering": true,
-        "info": true,
-        "autoWidth": false,
-        "responsive": true,
+        "order": [[0, 'desc']] // Order by the third column as default
       });
+      // $('#bots').DataTable({
+      //   "paging": true,
+      //   "lengthChange": false,
+      //   "searching": false,
+      //   "ordering": true,
+      //   "info": true,
+      //   "autoWidth": false,
+      //   "responsive": true,
+      // });
+      // Reload the whole page every 60000 milliseconds (1 minute)
+      setInterval(function() {
+          window.location.reload();
+      }, 300000);
     });
   </script>
 

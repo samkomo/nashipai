@@ -149,7 +149,7 @@ class Position(db.Model):
                 self.average_entry_price = ((self.average_entry_price or 0) * (self.position_size - order.quantity) - order.entry_price * order.quantity) / self.position_size
 
         # Update the position status
-        if self.position_size == 0 or order.pos_type == 'flat':
+        if self.position_size == 0:
             self.status = 'closed'
             self.closed_at = datetime.utcnow()
             self.exit_price = order.entry_price
@@ -193,7 +193,7 @@ class Position(db.Model):
         self.percent_profit_loss += percent_profit_loss if self.average_entry_price > 0 else 0
 
         # Check if the position should be closed
-        if self.position_size == 0 or order.pos_type == 'flat':
+        if self.position_size == 0:
             self.status = 'closed'
             self.closed_at = datetime.utcnow()
             self.exit_price = order.entry_price

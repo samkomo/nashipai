@@ -114,8 +114,9 @@ class TradingService:
                     symbol=payload['symbol'],
                     pos_type=payload['pos_type'],
                     average_entry_price=payload['order_price'] if payload['order_side'] == 'buy' else None,
-                    position_size=payload['pos_size'],
-                    status='open'
+                    position_size=quantity,
+                    status='open',
+                    signal=params
                 )
                 db.session.add(position)
                 db.session.flush()

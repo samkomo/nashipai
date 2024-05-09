@@ -173,7 +173,8 @@
                           <!-- <th>Exit Date/Time</th> -->
                           <!-- <th>Exit Price</th> -->
                           <th>Profit</th>
-                          <th>Cum. Profit</th>
+                          <th>Status</th>
+                          <!-- <th>Cum. Profit</th> -->
                       </tr>
                   </thead>
                   <tbody>
@@ -185,7 +186,7 @@
                             Entry {{ position.pos_type }}
                           </td>
                           <td>
-                            {{ position.status }} <br>
+                            {{ position.signal }} <br>
                             {{ position.pos_type }}
                           </td>
                           <td>
@@ -198,17 +199,25 @@
                         </td>
                         
                         
-                          <td>{{ position.position_size }}</td>
+                          <td>
+                              {{ position.exit_pos_size }}
+                              <br>
+                              <small class="text-muted">{{ position.entry_pos_size }}</small>
+                          </td>
                           <td>
                               {{ "{:.2f}".format(position.profit_loss) | default('0') }} USDT
                               <br>
                               <small class="text-muted">{{ "{:.2f}".format(position.percent_profit_loss) | default('0') }}%</small>
                           </td>
                           <td>
-                              {{ position.cumulative_profit | default('0') }} USDT
-                              <br>
-                              <small class="text-muted">{{ position.cumulative_percentage_profit | default('0') }}%</small>
-                          </td>
+                            {{ position.status }}
+                            
+                        </td>
+                        <!-- <td>
+                          {{ position.cumulative_profit | default('0') }} USDT
+                          <br>
+                          <small class="text-muted">{{ position.cumulative_percentage_profit | default('0') }}%</small>
+                      </td> -->
                       </tr>
                       {% endfor %}
                   </tbody>
@@ -223,7 +232,8 @@
                             <!-- <th>Exit Date/Time</th> -->
                             <!-- <th>Exit Price</th> -->
                             <th>Profit</th>
-                            <th>Cum. Profit</th>
+                            <th>Status</th>
+                            <!-- <th>Cum. Profit</th> -->
                         </tr>
                     </tfoot>
                   </table>

@@ -74,9 +74,6 @@ def view_bot(bot_id):
 
 @blueprint.route('/webhook', methods=['POST'])
 async def webhook() -> Tuple[Dict[str, Any], int]:
-    if request.method != 'POST':
-        return jsonify({"errorCode": "invalid_method", "message": "Method not allowed"}), 405
-
     payload: Dict[str, Any] = request.get_json()
     if not payload:
         return jsonify({"errorCode": "bad_request", "message": "No payload provided"}), 400
@@ -84,26 +81,19 @@ async def webhook() -> Tuple[Dict[str, Any], int]:
     if payload.get('passphrase') != EXPECTED_PASSPHRASE:
         return jsonify({"errorCode": "unauthorized", "message": "Unauthorized access"}), 401
 
-    required_fields = ['exchange', 'symbol', 'order_price', 'order_size', 'order_side', 'pos_size', 'pos_type', 'bot_id','type']
+    required_fields = ['exchange', 'symbol', 'order_price', 'order_size', 'order_side', 'pos_size', 'pos_type', 'bot_id', 'type']
     if any(field not in payload for field in required_fields):
         return jsonify({"errorCode": "missing_field", "message": "Missing required field(s)"}), 400
-    
-    # send_message_to_queue(str(payload))
-
-    # return jsonify({"message": "Order received and queued"}), 200
 
     try:
         logger.info(f"Moving to TradingService")
         response = await TradingService.process_order(payload)
-        # if response['status'] == 'success':
         logger.info(f"{response['status']}: {response['message']}")
-            # return render_template('trading/bot-details.html', bot=response['message'])
         return jsonify(response), 200
 
     except Exception as e:
-        flash(f'Error fetching bot details: {str(e)}', 'error')
         logger.error(f"Exception: {str(e)}")
-        return jsonify(str(e))
+        return jsonify({"errorCode": "server_error", "message": str(e)}), 500
 
 
 @blueprint.route('/activate_bot/<int:bot_id>', methods=['POST'])

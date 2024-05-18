@@ -1,12 +1,15 @@
 from datetime import datetime
+from decimal import Decimal, getcontext, ROUND_HALF_UP
 import logging
 from typing import Any, Dict
+import uuid
 from apps.trading.ccxt_client import CCXTService
 from apps.trading.models import Order, Position, TradingBot
 from apps import db
 
 logger = logging.getLogger(__name__)
-
+# Set decimal precision to avoid floating-point precision errors
+getcontext().prec = 28
 class TradingService:
 
     @staticmethod
@@ -35,6 +38,9 @@ class TradingService:
             logger.error(f'Error retrieving bots for user {user_id}: {str(e)}')
             return {'status': 'error', 'message': str(e)}
 
+        finally:
+            db.session.remove()  # Ensure the session is closed after processing
+
     @staticmethod
     def create_bot(user_id, strategy_id, exchange_account_id, bot_name):
         """ Create a new trading bot and save it to the database """
@@ -54,6 +60,9 @@ class TradingService:
             logger.error(f'Error creating bot: {str(e)}')
             return {'status': 'error', 'message': 'Failed to create trading bot.'}
         
+        finally:
+            db.session.remove()  # Ensure the session is closed after processing
+
     @staticmethod
     def get_bot(bot_id):
         """ Retrieve a single trading bot by its ID with standardized error handling. """
@@ -67,99 +76,183 @@ class TradingService:
             logger.error(f'Failed to retrieve bot {bot_id}: {str(e)}')
             return {'status': 'error', 'message': str(e)}
         
+        finally:
+            db.session.remove()  # Ensure the session is closed after processing
+
     @staticmethod
-    async def process_order(payload: Dict[str, Any]) -> Dict[str, Any]:
-        # Check if the payload provided is indeed a dictionary as expected
-        if not isinstance(payload, dict):
-            logger.error("Trade details should be a dictionary")
-            return {'status': 'error', 'message': 'Invalid trade details format'}
-        
-        symbol = payload['symbol']
-        order_type = payload['type']
-        side = payload['order_side']
-        quantity = float(payload['order_size'])
-        order_price = float(payload['order_price']) if payload['order_price'] else None
-        pos_type = payload['pos_type']
-        order_id = payload['order_id']
-        params = payload['params']
-        time = payload['time']
-        exchange = payload['exchange']
-        pos_size = payload['pos_size']
-        timeframe = payload['timeframe']
-        bot_name = payload['bot_name']
-
-        ccxt_client = None
+    async def process_order(data: Dict[str, Any]) -> Dict[str, Any]:
         try:
-            # Extract details, find bot and account, initialize exchange
-            bot_id = str(payload['bot_id'])  # Casting to string in case it's not
-            logger.info(f"Bot ID: {bot_id}")
-
-            bot = TradingBot.query.get(bot_id)
+            # Step 1: Get Bot and Strategy
+            bot = TradingService.get_trading_bot(data['bot_id'])
             if not bot:
-                return {'status': 'error', 'message': 'Trading bot not found'}
+                raise ValueError("Trading bot not found")
 
-            logger.info(f"Bot ID: {bot.id}")
+            # Step 2: Parse Signal Data
+            parsed_data = TradingService.parse_signal(data)
 
-            account = bot.account
-            ccxt_client = CCXTService(account.exchange.name, account.api_key, account.api_secret)
-            await ccxt_client.initialize_exchange()  # Properly await the asynchronous initialization
+            # Step 3: Execute Order
+            order = TradingService.execute_order(parsed_data, bot)
 
+            # Step 4: Update Position
+            position = TradingService.update_position(bot.id, parsed_data, order)
 
-            # Get or create the associated position
-            position = Position.query.filter_by(symbol=payload['symbol'], trading_bot_id=payload['bot_id'], status='open').first()
-            is_new_position = False
-            if not position:
-                position = Position(
-                    trading_bot_id=payload['bot_id'],
-                    symbol=payload['symbol'],
-                    pos_type=payload['pos_type'],
-                    average_entry_price=payload['order_price'] if payload['order_side'] == 'buy' else None,
-                    position_size=quantity,
-                    status='open',
-                    signal=params
-                )
-                db.session.add(position)
-                db.session.flush()
-                is_new_position = True
-            
-            # Create and execute the order
-            order = Order(
-                order_id=order_id,
-                position_id=position.id,
-                symbol=symbol,
-                order_type=order_type,
-                side=side,
-                quantity=quantity,
-                entry_price=order_price,
-                status='filled',  # Default status before execution
-                created_at=time,
-                bot_id=bot_id,
-                bot_name=bot_name,
-                exchange=exchange,
-                pos_size=pos_size,
-                pos_type=pos_type,
-                timeframe=timeframe,
-                params=params
-            )
+            # Step 5: Commit Order with Position ID
+            order.position_id = position.id
             db.session.add(order)
-            db.session.flush()  # Necessary to ensure the order is persisted before calculation
-
-            # Only update position if it wasn't newly created
-            if not is_new_position:
-                position.update_position(order)
-            position.calculate_profit_loss(order, account.maker_fee)  # Calculate profit/loss upon order execution regardless of new or existing
-
             db.session.commit()
 
-            return {'status': 'success', 'message': 'Order executed and position updated.', 'order_id': order.id}
+            # Step 6: Calculate PnL
+            TradingService.calculate_pnl(position, parsed_data['order_price'], parsed_data['order_side'])
+
+            # Step 7: Manage Risk (Optional)
+            TradingService.manage_risk(parsed_data, position)
+
+            # Step 8: Notify
+            TradingService.send_notifications(parsed_data, order)
+
+            return {'status': 'success', 'message': 'Order executed successfully', 'order': order.to_dict(), 'position': position.to_dict()}
+
         except Exception as e:
-            logger.error(f"An error occurred: {e}")
+            logger.error(f"Exception in process_order: {str(e)}")
             db.session.rollback()
             return {'status': 'error', 'message': str(e)}
-        finally:
-            if ccxt_client and ccxt_client.exchange:
-                await ccxt_client.exchange.close()  # Properly close the exchange
 
+        finally:
+            db.session.remove()  # Ensure the session is closed after processing
+
+    @staticmethod
+    def get_trading_bot(bot_id: int) -> TradingBot:
+        return TradingBot.query.get(bot_id)
+
+    @staticmethod
+    def parse_signal(data: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            'exchange': data.get('exchange'),
+            'symbol': data.get('symbol'),
+            'order_id': data.get('order_id') or str(uuid.uuid4()),  # Ensure unique order_id
+            'order_price': Decimal(data.get('order_price')),
+            'order_side': data.get('order_side'),
+            'order_size': Decimal(data.get('order_size')),
+            'pos_size': Decimal(data.get('pos_size')),
+            'pos_type': data.get('pos_type'),
+            'type': data.get('type'),
+            'timeframe': data.get('timeframe'),
+            'params': data.get('params'),
+            'bot_id': data.get('bot_id'),
+            'bot_name': data.get('bot_name')
+        }
+
+    @staticmethod
+    def execute_order(data: Dict[str, Any], bot: TradingBot) -> Order:
+        # exchange_class = getattr(ccxt, data['exchange'])
+        # exchange = exchange_class({
+        #     'apiKey': 'YOUR_API_KEY',
+        #     'secret': 'YOUR_SECRET',
+        # })
+
+        # if data['order_side'] == 'sell':
+        #     order_response = exchange.create_limit_sell_order(data['symbol'], float(data['order_size']), float(data['order_price']))
+        # else:
+        #     order_response = exchange.create_limit_buy_order(data['symbol'], float(data['order_size']), float(data['order_price']))
+
+        new_order = Order(
+            order_id=data['order_id'],
+            position_id=None,  # This will be set when the position is updated
+            symbol=data['symbol'],
+            order_type=data['type'],
+            side=data['order_side'],
+            quantity=data['order_size'],
+            entry_price=data['order_price'],
+            status='filled',
+            created_at=datetime.utcnow(),
+            executed_at=datetime.utcnow(),
+            bot_id=bot.id,
+            bot_name=bot.name,
+            exchange=data['exchange'],
+            timeframe=data['timeframe'],
+            params=data['params']
+        )
+        return new_order
+
+    @staticmethod
+    def update_position(bot_id: int, data: Dict[str, Any], order: Order) -> Position:
+        position = Position.query.filter_by(trading_bot_id=bot_id, symbol=data['symbol'], status='open').first()
+        
+        if not position:
+            if abs(data['order_size']) == abs(data['pos_size']):
+                position = Position(
+                    trading_bot_id=bot_id,
+                    symbol=data['symbol'],
+                    pos_type=data['pos_type'],
+                    status='open',
+                    created_at=datetime.utcnow(),
+                    average_entry_price=data['order_price'],
+                    position_size=data['order_size'],
+                    initial_size=data['order_size']
+                )
+                db.session.add(position)
+            else:
+                raise ValueError("Order size mismatch, cannot open or update position")
+
+        else:
+            if position.pos_type == 'long':
+                if data['order_side'] == 'buy':
+                    total_cost = position.average_entry_price * position.position_size + data['order_price'] * data['order_size']
+                    position.position_size += data['order_size']
+                    position.initial_size += data['order_size']
+                    position.average_entry_price = total_cost / position.position_size
+                elif data['order_side'] == 'sell':
+                    position.position_size -= data['order_size']
+            elif position.pos_type == 'short':
+                if data['order_side'] == 'sell':
+                    total_cost = position.average_entry_price * position.position_size + data['order_price'] * data['order_size']
+                    position.position_size += data['order_size']
+                    position.initial_size += data['order_size']
+                    position.average_entry_price = total_cost / position.position_size
+                elif data['order_side'] == 'buy':
+                    position.position_size -= data['order_size']
+
+            if position.position_size <= 0:
+                position.status = 'closed'
+                position.closed_at = datetime.utcnow()
+                position.exit_price = data['order_price']
+                position.position_size = Decimal('0.0')
+
+        # db.session.commit()
+
+        return position
+
+    @staticmethod
+    def calculate_pnl(position: Position, price: Decimal, side: str):
+        if position.status == 'closed':
+            logger.info(f"Calculating PnL for position {position.id}:")
+            logger.info(f"Position type: {position.pos_type}, Average entry price: {position.average_entry_price}, Exit price: {price}, Initial size: {position.initial_size}")
+            if position.pos_type == 'long':
+                position.profit_loss = (price - position.average_entry_price) * position.initial_size
+            elif position.pos_type == 'short':
+                position.profit_loss = (position.average_entry_price - price) * position.initial_size
+
+            logger.info(f"Calculated profit/loss: {position.profit_loss}")
+
+            position.percent_profit_loss = (position.profit_loss / (position.average_entry_price * abs(position.initial_size))) * Decimal('100')
+
+            # Correct precision issues
+            position.profit_loss = position.profit_loss.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            position.percent_profit_loss = position.percent_profit_loss.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+            logger.info(f"Calculated percent profit/loss: {position.percent_profit_loss}")
+
+        db.session.commit()
+
+    @staticmethod
+    def manage_risk(data: Dict[str, Any], position: Position):
+        # Implement risk management logic such as updating stop-loss and take-profit orders
+        pass
+
+    @staticmethod
+    def send_notifications(data: Dict[str, Any], order: Order):
+        # Implement notification logic, e.g., sending an email or a message to a messaging platform
+        pass
 
     @staticmethod
     def activate_bot(bot_id):
@@ -196,10 +289,10 @@ class TradingService:
         # Logic to place an order
         pass
 
-    @staticmethod
-    def execute_order(order_id, execution_price):
-        # Logic to execute an order
-        pass
+    # @staticmethod
+    # def execute_order(order_id, execution_price):
+    #     # Logic to execute an order
+    #     pass
 
     @staticmethod
     def cancel_order(order_id):

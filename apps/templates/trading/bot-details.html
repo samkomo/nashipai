@@ -200,9 +200,9 @@
                         
                         
                           <td>
-                              {{ position.exit_pos_size }}
+                              {{ position.position_size }}
                               <br>
-                              <small class="text-muted">{{ position.entry_pos_size }}</small>
+                              <small class="text-muted">{{ position.initial_size }}</small>
                           </td>
                           <td>
                               {{ "{:.2f}".format(position.profit_loss) | default('0') }} USDT

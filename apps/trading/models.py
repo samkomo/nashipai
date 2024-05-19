@@ -84,8 +84,8 @@ class Position(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     closed_at = db.Column(db.DateTime, nullable=True)
     average_entry_price = db.Column(Numeric(precision=20, scale=8), nullable=True)
-    position_size = db.Column(Numeric(precision=20, scale=8), default=Decimal('0.0'))
-    initial_size = db.Column(Numeric(precision=20, scale=8), default=Decimal('0.0'))
+    position_size = db.Column(Numeric(precision=20, scale=3), default=Decimal('0.0'))
+    initial_size = db.Column(Numeric(precision=20, scale=3), default=Decimal('0.0'))
     profit_loss = db.Column(Numeric(precision=20, scale=8), default=Decimal('0.0'))
     percent_profit_loss = db.Column(Numeric(precision=20, scale=8), default=Decimal('0.0'))
     exit_price = db.Column(Numeric(precision=20, scale=8), nullable=True)
@@ -121,7 +121,7 @@ class Order(db.Model):
     symbol = db.Column(db.String(20), nullable=False)
     order_type = db.Column(db.String(20), nullable=False)  # e.g., market, limit
     side = db.Column(db.String(10), nullable=False)  # e.g., buy, sell
-    quantity = db.Column(Numeric(precision=20, scale=8), default=Decimal('0.0'))
+    quantity = db.Column(Numeric(precision=20, scale=3), default=Decimal('0.0'))
     entry_price = db.Column(Numeric(precision=20, scale=8), nullable=True)  # Price at which order was filled
     status = db.Column(db.String(20), nullable=False, default='pending')  # e.g., pending, filled, cancelled
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

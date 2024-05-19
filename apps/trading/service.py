@@ -20,7 +20,7 @@ class TradingService:
             bots_data = [bot.to_dict() for bot in bots]  # Convert each bot instance to a dictionary
             # Calculate total profit/loss and percentage
             total_profit_loss = sum(bot.total_profit_loss for bot in bots)
-            total_percent_profit_loss = sum(bot.total_percent_profit_loss for bot in bots) / len(bots) if bots else 0
+            total_percent_profit_loss = sum(bot.total_percent_profit_loss for bot in bots)  # / len(bots) if bots else 0
 
             # Create a new dictionary to store total data
             totals = {
@@ -126,14 +126,17 @@ class TradingService:
 
     @staticmethod
     def parse_signal(data: Dict[str, Any]) -> Dict[str, Any]:
+        def to_decimal(value: str) -> Decimal:
+            return Decimal(value).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+        
         return {
             'exchange': data.get('exchange'),
             'symbol': data.get('symbol'),
             'order_id': data.get('order_id') or str(uuid.uuid4()),  # Ensure unique order_id
-            'order_price': Decimal(data.get('order_price')),
+            'order_price': to_decimal(data.get('order_price')),
             'order_side': data.get('order_side'),
-            'order_size': Decimal(data.get('order_size')),
-            'pos_size': Decimal(data.get('pos_size')),
+            'order_size': to_decimal(data.get('order_size')),
+            'pos_size': to_decimal(data.get('pos_size')),
             'pos_type': data.get('pos_type'),
             'type': data.get('type'),
             'timeframe': data.get('timeframe'),
@@ -156,7 +159,7 @@ class TradingService:
         #     order_response = exchange.create_limit_buy_order(data['symbol'], float(data['order_size']), float(data['order_price']))
 
         new_order = Order(
-            order_id=data['order_id'],
+            order_id=str(uuid.uuid4()),
             position_id=None,  # This will be set when the position is updated
             symbol=data['symbol'],
             order_type=data['type'],
@@ -218,7 +221,8 @@ class TradingService:
                 position.exit_price = data['order_price']
                 position.position_size = Decimal('0.0')
 
-        # db.session.commit()
+        db.session.flush()  # Replacing commit with flush
+        
 
         return position
 

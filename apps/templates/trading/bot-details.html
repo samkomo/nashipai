@@ -130,10 +130,20 @@
                 <div class="col-12 col-sm-4">
                   <div class="info-box bg-light">
                     <div class="info-box-content text-center">
-                        <span class="description-percentage text-success"><i class="fas fa-caret-up"></i> {{"{:.2f}".format(bot.total_percent_profit_loss)}}%</span>
-                        <h5 class="description-header">{{"{:.2f}".format(bot.total_profit_loss)}}</h5>
-                        <span class="description-text">NET PROFIT</span>
-                    </div>
+                      <span class="description-percentage 
+                          {% if bot.total_percent_profit_loss > 0 %}text-success
+                          {% elif bot.total_percent_profit_loss < 0 %}text-danger
+                          {% else %}text-secondary{% endif %}">
+                          <i class="fas 
+                          {% if bot.total_percent_profit_loss > 0 %}fa-caret-up
+                          {% elif bot.total_percent_profit_loss < 0 %}fa-caret-down
+                          {% else %}fa-minus{% endif %}"></i> 
+                          {{"{:.2f}".format(bot.total_percent_profit_loss)}}%
+                      </span>
+                      <h5 class="description-header">{{ "{:.2f}".format(bot.total_profit_loss) }}</h5>
+                      <span class="description-text">NET PROFIT</span>
+                  </div>
+                  
                   </div>
                 </div>
                 <div class="col-12 col-sm-4">
@@ -146,10 +156,11 @@
                   </div>
                 </div>
                 <div class="col-12 col-sm-4">
+                  <!-- Max Drawdown Info Box -->
                   <div class="info-box bg-light">
                     <div class="info-box-content text-center">
-                        <span class="description-percentage text-danger"><i class="fas fa-caret-down"></i> 12%</span>
-                        <h5 class="description-header">985</h5>
+                        <span class="description-percentage text-danger"><i class="fas fa-caret-down"></i> <span id="maxDrawdownPercentage"></span></span>
+                        <h5 class="description-header"><span id="maxDrawdownValue"></span> USDT</h5>
                         <span class="description-text">MAX DRAWDOWN</span>
                     </div>
                   </div>
@@ -398,60 +409,153 @@
         }
     });
 </script>
-  <script>
-    // Example data extraction (This part should be dynamically generated based on your server-side language or JavaScript)
-    var labels = [];
-    var profitData = [];
-    var cumulativeProfitData = [];
-    
-    var positions = {{ bot.positions | tojson | safe }};
-    var cumulativeProfit = 0;
-  
-    positions.forEach(position => {
-      labels.push(`Trade ${position.id}`);  // Assuming the position ID is unique and sufficient as a label
-      profitData.push(position.profit_loss);
-      cumulativeProfit += position.profit_loss;
-      cumulativeProfitData.push(cumulativeProfit);
-    });
-  
-    // Chart.js chart initialization
-    var ctx = document.getElementById('comboChart').getContext('2d');
-    var comboChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Profit/Loss',
-                type: 'bar',
-                data: profitData,
-                backgroundColor: profitData.map(data => data >= 0 ? 'rgba(40, 235, 95, 0.2)' : 'rgba(255, 99, 132, 0.2)'),
-                borderColor: profitData.map(data => data >= 0 ? 'rgba(40, 235, 95, 1)' : 'rgba(255, 99, 132, 1)'),
-                borderWidth: 1
-            }, {
-                label: 'Cumulative Profit',
-                type: 'line',
-                data: cumulativeProfitData,
-                borderColor: 'rgb(245, 180, 6)',
-                borderWidth: 2,
-                fill: false
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            },
-            tooltips: {
-                mode: 'index',
-                intersect: false
-            }
-        }
-    });
-  </script>
+
+<script>
+  // Example data extraction (This part should be dynamically generated based on your server-side language or JavaScript)
+  var labels = [];
+  var profitData = [];
+  var cumulativeProfitData = [];
+  var drawdownData = [];
+
+  // Assuming positions is a list of objects with at least 'profit_loss' attribute
+  var positions = {{ bot.positions | tojson | safe }};
+  var initialBalance = 1000;
+  var cumulativeProfit = initialBalance;
+  var maxCumulativeProfit = initialBalance;
+  var maxDrawdown = 0;
+  var maxDrawdownPercentage = 0;
+
+  // Initialize custom counter
+  var tradeCounter = 1;
+  var stopTrading = false;
+
+  // Sort positions by id in ascending order
+  positions.sort((a, b) => a.id - b.id);
+
+  // Populate the data arrays using the custom counter for labels
+  positions.forEach(position => {
+      if (!stopTrading) {
+          labels.push(` ${tradeCounter}`);  // Use the custom counter for labels
+          profitData.push(position.profit_loss);
+          cumulativeProfit += position.profit_loss;
+          cumulativeProfitData.push(cumulativeProfit);
+          maxCumulativeProfit = Math.max(maxCumulativeProfit, cumulativeProfit);
+          var drawdown = cumulativeProfit - maxCumulativeProfit;  // Calculate negative drawdown
+          drawdownData.push(drawdown);
+          maxDrawdown = Math.min(maxDrawdown, drawdown);  // Update max drawdown (more negative value)
+
+          // Calculate percentage drawdown
+          var drawdownPercentage = (drawdown / maxCumulativeProfit) * 100;
+          maxDrawdownPercentage = Math.min(maxDrawdownPercentage, drawdownPercentage); // Update max drawdown percentage
+
+          tradeCounter++;  // Increment the counter for the next trade
+
+          // Check if the account balance is blown
+          if (cumulativeProfit <= 0) {
+              stopTrading = false;
+          }
+      }
+  });
+
+  // Function to get the border color based on the cumulative profit
+  function getBorderColors(data, initialBalance) {
+      var borderColors = [];
+      var belowInitialBalance = false;
+
+      data.forEach(value => {
+          if (value < initialBalance) {
+              belowInitialBalance = true;
+          } else {
+              belowInitialBalance = false;
+          }
+          borderColors.push(belowInitialBalance ? 'rgba(255, 99, 132, 1)' : 'rgba(0, 123, 255, 1)');
+      });
+
+      return borderColors;
+  }
+
+  // Chart.js chart initialization
+  var ctx = document.getElementById('comboChart').getContext('2d');
+  var comboChart = new Chart(ctx, {
+      type: 'bar',  // Initial chart type for bars
+      data: {
+          labels: labels,
+          datasets: [{
+              label: 'Profit/Loss',
+              type: 'bar',
+              data: profitData,
+              backgroundColor: profitData.map(data => data >= 0 ? 'rgba(75, 192, 192, 0.2)' : 'rgba(255, 99, 132, 0.2)'),
+              borderColor: profitData.map(data => data >= 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255,  99, 132, 1)'),
+              borderWidth: 1,
+              yAxisID: 'y-axis-left',
+              hidden: true  // Drawdown dataset is initially hidden
+          }, {
+              label: 'Cumulative Profit',
+              type: 'line',
+              data: cumulativeProfitData,
+              borderColor: getBorderColors(cumulativeProfitData, initialBalance),  // Dynamic border colors
+              backgroundColor: 'rgba(0, 123, 255, 0.2)',  // Blue fill color with transparency
+              borderWidth: 2,
+              fill: true,
+              yAxisID: 'y-axis-left',
+              tension: 0  // Set tension to 0 for straight lines between points
+          }, {
+              label: 'Drawdown',
+              type: 'bar',
+              data: drawdownData,
+              backgroundColor: 'rgba(153, 102, 255, 0.2)',  // Purple fill color with transparency
+              borderColor: 'rgba(153, 102, 255, 1)',  // Purple border color
+              borderWidth: 1,
+              yAxisID: 'y-axis-right',
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+              yAxes: [{
+                  id: 'y-axis-left',
+                  position: 'left',
+                  ticks: {
+                      beginAtZero: true
+                  },
+                  scaleLabel: {
+                      display: true,
+                      labelString: 'Profit/Loss & Cumulative Profit'
+                  }
+              }, {
+                  id: 'y-axis-right',
+                  position: 'right',
+                  ticks: {
+                      beginAtZero: true,
+                      callback: function(value, index, values) {
+                          return value <= 0 ? value : null;  // Only display negative values
+                      }
+                  },
+                  scaleLabel: {
+                      display: true,
+                      labelString: 'Drawdown'
+                  }
+              }]
+          },
+          tooltips: {
+              mode: 'index',
+              intersect: false
+          },
+          elements: {
+              line: {
+                  tension: 0  // Ensure lines are straight between points
+              }
+          }
+      }
+  });
+
+  // Update Max Drawdown in the HTML
+  document.getElementById('maxDrawdownValue').innerText = (maxDrawdown * -1).toFixed(2);  // Display as positive
+  document.getElementById('maxDrawdownPercentage').innerText = (maxDrawdownPercentage * -1).toFixed(2) + '%';  // Display as positive
+</script>
+
+
+
   
 {% endblock javascripts %}

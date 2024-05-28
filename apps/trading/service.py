@@ -128,12 +128,15 @@ class TradingService:
     def parse_signal(data: Dict[str, Any]) -> Dict[str, Any]:
         def to_decimal(value: str) -> Decimal:
             return Decimal(value).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
-        
+        def price_to_decimal(value: str) -> Decimal:
+            return Decimal(value).quantize(Decimal('0.00000001'), rounding=ROUND_HALF_UP)
+        def parse_time(value: str) -> datetime:
+            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
         return {
             'exchange': data.get('exchange'),
             'symbol': data.get('symbol'),
             'order_id': data.get('order_id') or str(uuid.uuid4()),  # Ensure unique order_id
-            'order_price': to_decimal(data.get('order_price')),
+            'order_price': price_to_decimal(data.get('order_price')),
             'order_side': data.get('order_side'),
             'order_size': to_decimal(data.get('order_size')),
             'pos_size': to_decimal(data.get('pos_size')),
@@ -142,7 +145,8 @@ class TradingService:
             'timeframe': data.get('timeframe'),
             'params': data.get('params'),
             'bot_id': data.get('bot_id'),
-            'bot_name': data.get('bot_name')
+            'bot_name': data.get('bot_name'),
+            'time': parse_time(data.get('time'))  # Parse time to datetime
         }
 
     @staticmethod
@@ -167,7 +171,7 @@ class TradingService:
             quantity=data['order_size'],
             entry_price=data['order_price'],
             status='filled',
-            created_at=datetime.utcnow(),
+            created_at=data['time'],
             executed_at=datetime.utcnow(),
             bot_id=bot.id,
             bot_name=bot.name,
@@ -188,7 +192,7 @@ class TradingService:
                     symbol=data['symbol'],
                     pos_type=data['pos_type'],
                     status='open',
-                    created_at=datetime.utcnow(),
+                    created_at=data['time'],
                     average_entry_price=data['order_price'],
                     position_size=data['order_size'],
                     initial_size=data['order_size']
@@ -206,6 +210,7 @@ class TradingService:
                     position.average_entry_price = total_cost / position.position_size
                 elif data['order_side'] == 'sell':
                     position.position_size -= data['order_size']
+                    position.exit_price = data['order_price']
             elif position.pos_type == 'short':
                 if data['order_side'] == 'sell':
                     total_cost = position.average_entry_price * position.position_size + data['order_price'] * data['order_size']
@@ -214,10 +219,11 @@ class TradingService:
                     position.average_entry_price = total_cost / position.position_size
                 elif data['order_side'] == 'buy':
                     position.position_size -= data['order_size']
+                    position.exit_price = data['order_price']
 
             if position.position_size <= 0:
                 position.status = 'closed'
-                position.closed_at = datetime.utcnow()
+                position.closed_at = data['time']
                 position.exit_price = data['order_price']
                 position.position_size = Decimal('0.0')
 
@@ -228,7 +234,7 @@ class TradingService:
 
     @staticmethod
     def calculate_pnl(position: Position, price: Decimal, side: str):
-        if position.status == 'closed':
+        if position.status == 'closed' or position.exit_price != None:
             logger.info(f"Calculating PnL for position {position.id}:")
             logger.info(f"Position type: {position.pos_type}, Average entry price: {position.average_entry_price}, Exit price: {price}, Initial size: {position.initial_size}")
             if position.pos_type == 'long':

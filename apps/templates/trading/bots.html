@@ -1,13 +1,10 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Tables Data {% endblock %} 
+{% block title %} Tables Data {% endblock %}
 
-<!-- Element injected in the BODY element -->
-{% block body_class %} {% endblock body_class %} 
+{% block body_class %} {% endblock body_class %}
 
-<!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
@@ -18,11 +15,9 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 {% endblock stylesheets %}
 
-{% block content %} 
-
+{% block content %}
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -55,13 +50,13 @@
                 </div>
                 <!-- ./card-header -->
                 <div class="card-body">
-                  <table id="#bots" class="table table-bordered table-hover">
+                  <table id="bots" class="table table-bordered table-hover">
                     <thead>
                       <tr>
                         <th>Bot Name</th>
                         <th>Strategy</th>
                         <th>Trading Account</th>
-                        <th>Profit/Loss</th>
+                        <th class="text-center">Profit/Loss</th>
                         <th>Win Rate</th>
                         <th class="text-center" style="width: 12%">Actions</th>
                       </tr>
@@ -93,49 +88,78 @@
                               <!-- If the bot is inactive, show a gray circle -->
                               <i class="fa fa-circle" style="color: #808080;" aria-label="Inactive Status"></i> Stopped
                               {% endif %}
-                              <!-- Conditional rendering for the status icon based on bot.status
-                              {% if bot.status == 'active' %}
-                                  <i class="fa fa-circle" style="color: #00FF00;" aria-label="Active Status"></i> Active
-                              {% elif bot.status == 'inactive' %}
-                                  <i class="fa fa-circle" style="color: #FF0000;" aria-label="Inactive Status"></i> Inactive
-                              {% elif bot.status == 'error' %}
-                                  <i class="fa fa-exclamation-circle" style="color: #FF0000;" aria-label="Error Status"></i> Error
-                              {% else %}
-                                  <i class="fa fa-circle-notch" style="color: #FFA500;" aria-label="Unknown Status"></i> Unknown
-                              {% endif %} -->
                           </small>
-                          
-                          
-                          
                         </td>
                         <td>
                           <a href="{{ url_for('strategies_blueprint.get_strategy', strategy_id=bot.strategy.id) }}" class="font-weight-bold">
                               {{ bot.strategy.name }}
                           </a> <br>
                             <small>
-                              <!-- <img src="/static/assets/icons/{{ bot.strategy.coin_pair | upper }}@2x.png" alt="{{ bot.strategy.coin_pair }} Icon" style="height: 20px; margin-right: 5px;">  -->
                               {{ bot.strategy.coin_pair }} | {{ bot.strategy.time_frame }}
                             </small>
                         </td>
                         <td>{{ bot.account.account_name }} <br>
                             <small>Exchange: {{ bot.account.exchange_name }} </small>
                         </td>
-                        <td>
-                          {{ "{:.2f}".format(bot.total_profit_loss) }} USDT <br>
-                          <span class="description-percentage 
-                              {% if bot.total_percent_profit_loss > 0 %}text-success
-                              {% elif bot.total_percent_profit_loss < 0 %}text-danger
-                              {% else %}text-secondary{% endif %}">
-                              <i class="fas 
-                              {% if bot.total_percent_profit_loss > 0 %}fa-caret-up
-                              {% elif bot.total_percent_profit_loss < 0 %}fa-caret-down
-                              {% endif %}"></i> 
-                              {{"{:.2f}".format(bot.total_percent_profit_loss)}}%
-                          </span>
+                        <td class="text-center p-3">
+                          {{ "{:.2f}".format(bot.total_profit_loss) }} USDT 
+                          <br>
+                          <small>
+                              7D: <span class="description-percentage 
+                                {% if bot.percent_profit_7d > 0 %}text-success
+                                {% elif bot.percent_profit_7d < 0 %}text-danger
+                                {% else %}text-secondary{% endif %}">
+                                <i class="fas 
+                                {% if bot.percent_profit_7d > 0 %}fa-caret-up
+                                {% elif bot.percent_profit_7d < 0 %}fa-caret-down
+                                {% endif %}"></i> 
+                                {{"{:.2f}".format(bot.percent_profit_7d)}}%
+                              </span>
+                      
+                              {% if bot.days_running >= 14 %}
+                              | 14D: <span class="description-percentage 
+                                {% if bot.percent_profit_14d > 0 %}text-success
+                                {% elif bot.percent_profit_14d < 0 %}text-danger
+                                {% else %}text-secondary{% endif %}">
+                                <i class="fas 
+                                {% if bot.percent_profit_14d > 0 %}fa-caret-up
+                                {% elif bot.percent_profit_14d < 0 %}fa-caret-down
+                                {% endif %}"></i> 
+                                {{"{:.2f}".format(bot.percent_profit_14d)}}%
+                              </span>
+                              {% endif %}
+                      
+                              {% if bot.days_running >= 30 %}
+                              | 30D: <span class="description-percentage 
+                                {% if bot.percent_profit_30d > 0 %}text-success
+                                {% elif bot.percent_profit_30d < 0 %}text-danger
+                                {% else %}text-secondary{% endif %}">
+                                <i class="fas 
+                                {% if bot.percent_profit_30d > 0 %}fa-caret-up
+                                {% elif bot.percent_profit_30d < 0 %}fa-caret-down
+                                {% endif %}"></i> 
+                                {{"{:.2f}".format(bot.percent_profit_30d)}}%
+                              </span>
+                              {% endif %}
+                      
+                              {% if bot.days_running >= 90 %}
+                              | 90D: <span class="description-percentage 
+                                {% if bot.percent_profit_90d > 0 %}text-success
+                                {% elif bot.percent_profit_90d < 0 %}text-danger
+                                {% else %}text-secondary{% endif %}">
+                                <i class="fas 
+                                {% if bot.percent_profit_90d > 0 %}fa-caret-up
+                                {% elif bot.percent_profit_90d < 0 %}fa-caret-down
+                                {% endif %}"></i> 
+                                {{"{:.2f}".format(bot.percent_profit_90d)}}%
+                              </span>
+                              {% endif %}
+                          </small>
                         </td>
+                                                                 
                         <td class="project_progress text-center p-3">
                           <div class="progress progress-sm">
-                              {% if bot.win_rate < 50 %}
+                              {% if bot.win_rate < 40 %}
                                   <div class="progress-bar bg-red" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
                                       {{"{:.1f}".format(bot.win_rate)}} %
                                   </div>
@@ -152,38 +176,30 @@
                           <small>
                               {{ bot.closed_trades }} closed trades
                           </small>
-                      </td>                      
-                      <td class="text-center">
-                        <!-- Edit Button -->
-                        <button type="button" class="btn btn-default btn-sm" onclick="editBot({{ bot.id }})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    
-                        <!-- Pause/Start Button based on bot status -->
-                        {% if bot.status == 'active' %}
-                        <button type="button" class="btn btn-default btn-sm" onclick="pauseBot({{ bot.id }})">
-                            <i class="fas fa-pause"></i>
-                        </button>
-                        {% else %}
-                        <button type="button" class="btn btn-default btn-sm" onclick="startBot({{ bot.id }})">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        {% endif %}
-                    
-                        <!-- Delete Button -->
-                        <button type="button" class="btn btn-default btn-sm" onclick="deleteBot({{ bot.id }})">
-                            <i class="far fa-trash-alt"></i>
-                        </button>
-                    </td>
-                    
+                        </td>                         
+                        <td class="text-center">
+                          <!-- Edit Button -->
+                          <button type="button" class="btn btn-default btn-sm" onclick="editBot({{ bot.id }})">
+                              <i class="fas fa-edit"></i>
+                          </button>
+                      
+                          <!-- Pause/Start Button based on bot status -->
+                          {% if bot.status == 'active' %}
+                          <button type="button" class="btn btn-default btn-sm" onclick="pauseBot({{ bot.id }})">
+                              <i class="fas fa-pause"></i>
+                          </button>
+                          {% else %}
+                          <button type="button" class="btn btn-default btn-sm" onclick="startBot({{ bot.id }})">
+                              <i class="fas fa-play"></i>
+                          </button>
+                          {% endif %}
+                      
+                          <!-- Delete Button -->
+                          <button type="button" class="btn btn-default btn-sm" onclick="deleteBot({{ bot.id }})">
+                              <i class="far fa-trash-alt"></i>
+                          </button>
+                      </td>
                       </tr>
-                      <!-- <tr class="expandable-body">
-                        <td colspan="6">
-                          <p>
-                            
-                          </p>
-                        </td>
-                      </tr> -->
                       {% endfor %}
                       <!-- Add Total Row -->
                       <tr>
@@ -204,37 +220,21 @@
                         <td colspan="2"></td>
                       </tr>
                     </tbody>
-                    <!-- <tfoot>
-                      <tr>
-                        <th>Bot Name</th>
-                        <th>Strategy</th>
-                        <th>Trading Account</th>
-                        <th>Profit/Loss</th>
-                        <th>Win Rate</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                  </tfoot> -->
                   </table>
                 </div>
                 <!-- /.card-body -->
               </div>
               <!-- /.card -->
-
-              
             </div>
           </div>
-          <!--  -->
       </div>
       <!-- /.container-fluid -->
     </section>
     <!-- /.content -->
   </div>
-
 {% endblock content %}
 
-<!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
-
   <!-- jQuery -->
   <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
@@ -255,24 +255,15 @@
         "responsive": true,
         "autoWidth": false,
         "ordering": true,
-        "order": [[0, 'desc']] // Order by the third column as default
+        "order": [[0, 'desc']] // Order by the first column as default
       });
-      // $('#bots').DataTable({
-      //   "paging": true,
-      //   "lengthChange": false,
-      //   "searching": false,
-      //   "ordering": true,
-      //   "info": true,
-      //   "autoWidth": false,
-      //   "responsive": true,
-      // });
-      // Reload the whole page every 60000 milliseconds (1 minute)
+
+      // Reload the whole page every 300000 milliseconds (5 minutes)
       setInterval(function() {
           window.location.reload();
       }, 300000);
     });
-  </script>
-  <script>
+
     function deleteBot(botId) {
         Swal.fire({
             title: 'Are you sure?',

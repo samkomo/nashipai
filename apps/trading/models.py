@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from sqlalchemy import Numeric
 from sqlalchemy.orm import relationship
@@ -49,11 +49,32 @@ class TradingBot(db.Model):
 
         return win_rate
     
+
+    @property
+    def percent_profit_7d(self):
+        return self._calculate_percent_profit_for_period(7)
+    
+    @property
+    def percent_profit_14d(self):
+        return self._calculate_percent_profit_for_period(14)
+    
+    @property
+    def percent_profit_30d(self):
+        return self._calculate_percent_profit_for_period(30)
+    
+    @property
+    def percent_profit_90d(self):
+        return self._calculate_percent_profit_for_period(90)
+    
+    def _calculate_percent_profit_for_period(self, days):
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=days)
+        positions = [p for p in self.positions if p.closed_at is not None and start_date <= p.closed_at <= end_date]
+        return sum(p.percent_profit_loss for p in positions)
+
     def to_dict(self):
         """ Serialize the TradingBot object including strategy details. """
         days_running = (datetime.utcnow() - self.created_at).days if self.created_at else 0
-        # natural_day = humanize.naturalday(self.created_at) if self.created_at else 'Unknown'
-
         return {
             'id': self.id,
             'name': self.name,
@@ -63,15 +84,18 @@ class TradingBot(db.Model):
             'user_id': self.user_id,
             'exchange_account_id': self.exchange_account_id,
             'status': self.status,
-            'total_profit_loss': self.total_profit_loss,  # Add cumulative PnL to the serialized output
-            'total_percent_profit_loss': self.total_percent_profit_loss,  # Add cumulative PnL to the serialized output
-            'win_rate': self.calculate_win_rate(),  # Include win rate in the dictionary
+            'total_profit_loss': self.total_profit_loss,
+            'total_percent_profit_loss': self.total_percent_profit_loss,
+            'win_rate': self.calculate_win_rate(),
             'closed_trades': self.closed_trades_count,
             'has_open_position': self.has_open_position,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
-            'days_running': days_running
+            'days_running': days_running,
+            'percent_profit_7d': self.percent_profit_7d,
+            'percent_profit_14d': self.percent_profit_14d,
+            'percent_profit_30d': self.percent_profit_30d,
+            'percent_profit_90d': self.percent_profit_90d
         }
-
 
 class Position(db.Model):
     __tablename__ = 'positions'

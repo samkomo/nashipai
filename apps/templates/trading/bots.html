@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 {% endblock stylesheets %}
 
@@ -73,13 +74,17 @@
                                 {{ bot.name }}
                             </a> <br>
                             <small>
-                              <i class="fa fa-calendar-alt" style="color: #4682B4;"></i> {{ bot.days_running }} days ago |
+                              ID: {{ bot.id }} | 
+                              <i class="fa fa-calendar-alt" style="color: #4682B4;"></i>  {{ bot.days_running }} days ago |
 
                               <!-- Extended Conditional Rendering for Bot Status -->
                               {% if bot.status == 'active' %}
-                              {% if bot.has_open_position %}
-                                  <!-- If the bot is active and has open positions, show a green circle -->
-                                  <i class="fa fa-circle" style="color: #00FF00;" aria-label="Active Status"></i> Engaged
+                              {% set open_position = bot.positions | selectattr('status', 'equalto', 'open') | first %}
+
+                              {% if open_position %}
+                                  <!-- If the bot is active and has open positions, show a green circle and position type -->
+                                  <i class="fa fa-circle" style="color: #00FF00;" aria-label="Active Status"></i>
+                                  {{ open_position.pos_type | capitalize }} Position
                               {% else %}
                                   <!-- If the bot is active but does not have open positions, show an orange circle -->
                                   <i class="fa fa-circle" style="color: #FFA500;" aria-label="Standby Status"></i> Standby
@@ -88,9 +93,6 @@
                               <!-- If the bot is inactive, show a gray circle -->
                               <i class="fa fa-circle" style="color: #808080;" aria-label="Inactive Status"></i> Stopped
                               {% endif %}
-
-
-                          
                               <!-- Conditional rendering for the status icon based on bot.status
                               {% if bot.status == 'active' %}
                                   <i class="fa fa-circle" style="color: #00FF00;" aria-label="Active Status"></i> Active
@@ -133,14 +135,24 @@
                         </td>
                         <td class="project_progress text-center p-3">
                           <div class="progress progress-sm">
-                              <div class="progress-bar bg-green" role="progressbar" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100" style="width: {{bot.win_rate}}%">
-                                  {{"{:.1f}".format(bot.win_rate)}} % 
-                              </div>
+                              {% if bot.win_rate < 50 %}
+                                  <div class="progress-bar bg-red" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
+                                      {{"{:.1f}".format(bot.win_rate)}} %
+                                  </div>
+                              {% elif bot.win_rate < 66 %}
+                                  <div class="progress-bar bg-yellow" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
+                                      {{"{:.1f}".format(bot.win_rate)}} %
+                                  </div>
+                              {% else %}
+                                  <div class="progress-bar bg-green" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
+                                      {{"{:.1f}".format(bot.win_rate)}} %
+                                  </div>
+                              {% endif %}
                           </div>
                           <small>
-                            {{ bot.closed_trades }} closed trades
-                        </small>
-                      </td>
+                              {{ bot.closed_trades }} closed trades
+                          </small>
+                      </td>                      
                       <td class="text-center">
                         <!-- Edit Button -->
                         <button type="button" class="btn btn-default btn-sm" onclick="editBot({{ bot.id }})">
@@ -260,5 +272,58 @@
       }, 300000);
     });
   </script>
-
+  <script>
+    function deleteBot(botId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Deleting...',
+                    text: 'Please wait while the bot is being deleted.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                fetch(`/trading/delete_bot/${botId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire(
+                            'Deleted!',
+                            'Your bot has been deleted.',
+                            'success'
+                        ).then(() => {
+                            window.location.href = '/trading/list_bots';  // Redirect to the list of bots
+                        });
+                    } else {
+                        Swal.fire(
+                            'Error!',
+                            data.message,
+                            'error'
+                        );
+                    }
+                }).catch(error => {
+                    Swal.fire(
+                        'Error!',
+                        'An error occurred while deleting the bot.',
+                        'error'
+                    );
+                });
+            }
+        });
+    }
+  </script>
 {% endblock javascripts %}

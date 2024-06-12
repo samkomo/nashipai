@@ -279,21 +279,39 @@ class TradingService:
         # Logic to update bot settings
         pass
 
+    # @staticmethod
+    # def delete_bot(bot_id):
+    #     """ Deletes a bot from the database """
+    #     try:
+    #         bot = TradingBot.query.get(bot_id)
+    #         if not bot:
+    #             return {'status': 'error', 'message': 'Bot not found.'}
+    #         db.session.delete(bot)
+    #         db.session.commit()
+    #         return {'status': 'success', 'message': 'Bot deleted successfully.'}
+    #     except Exception as e:
+    #         db.session.rollback()
+    #         logger.error(f'Error deleting bot: {str(e)}')
+    #         return {'status': 'error', 'message': 'Failed to delete bot.'}
+
     @staticmethod
     def delete_bot(bot_id):
         """ Deletes a bot from the database """
         try:
             bot = TradingBot.query.get(bot_id)
-            if not bot:
-                return {'status': 'error', 'message': 'Bot not found.'}
-            db.session.delete(bot)
-            db.session.commit()
-            return {'status': 'success', 'message': 'Bot deleted successfully.'}
+            if bot:
+                db.session.delete(bot)
+                db.session.commit()
+                logger.info(f"Deleted bot {bot_id} and its related positions and orders.")
+                return {"status": "success", "message": f"Bot {bot_id} and its related positions and orders were deleted successfully."}
+            else:
+                logger.warning(f"Bot {bot_id} not found.")
+                return {"status": "error", "message": f"Bot {bot_id} not found."}
         except Exception as e:
             db.session.rollback()
-            logger.error(f'Error deleting bot: {str(e)}')
-            return {'status': 'error', 'message': 'Failed to delete bot.'}
-
+            logger.error(f"An error occurred while deleting bot {bot_id}: {str(e)}")
+            return {"status": "error", "message": f"An error occurred while deleting bot {bot_id}: {str(e)}"}
+        
     @staticmethod
     def place_order(bot_id, symbol, order_type, side, quantity, entry_price=None):
         # Logic to place an order

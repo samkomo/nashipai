@@ -113,13 +113,14 @@ def update_bot(bot_id):
     settings = request.form.to_dict()
     TradingService.update_bot_settings(bot_id, **settings)
     flash('Trading bot updated successfully!', 'success')
-    return redirect(url_for('dashboard.show_bots'))
+    return redirect(url_for('trading_blueprint.list_bots'))
 
-@blueprint.route('/delete_bot/<int:bot_id>', methods=['POST'])
+@blueprint.route('/delete_bot/<int:bot_id>', methods=['DELETE'])
 def delete_bot(bot_id):
-    TradingService.delete_bot(bot_id)
-    flash('Trading bot deleted successfully!', 'warning')
-    return redirect(url_for('dashboard.show_bots'))
+    response = TradingService.delete_bot(bot_id)
+    if response['status'] == 'success':
+        flash('Trading bot deleted successfully!', 'warning')
+    return jsonify(response), 200 if response['status'] == 'success' else 400
 
 @blueprint.route('/place_order', methods=['POST'])
 def place_order():

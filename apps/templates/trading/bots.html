@@ -15,6 +15,8 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- ChartJS -->
+  <script src="/static/assets/plugins/chart.js/Chart.min.js"></script>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -36,197 +38,206 @@
         </div>
       </div><!-- /.container-fluid -->
     </section>
-    <!-- {{data|tojson}} -->
+    
+    <!-- Analytics Summary -->
+    <section class="content">
+      <div class="container-fluid">
+        <!-- Info boxes -->
+        <div class="row">
+          <div class="col-md-3 col-sm-6 col-12">
+            <div class="info-box">
+              <span class="info-box-icon bg-info"><i class="fas fa-wallet"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">Account Balance</span>
+                <span class="info-box-number">${{ "{:.2f}".format(data.totals.total_balance) }} USDT</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 col-12">
+            <div class="info-box">
+              <span class="info-box-icon {% if data.totals.total_profit_loss > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                <i class="fas fa-chart-line"></i>
+              </span>
+              <div class="info-box-content">
+                <span class="info-box-text">Net Profit</span>
+                <span class="info-box-number">
+                  {% if data.totals.total_profit_loss > 0 %}
+                    <span class="text-success">${{ "{:.2f}".format(data.totals.total_profit_loss) }} USDT</span>
+                  {% else %}
+                    <span class="text-danger">${{ "{:.2f}".format(data.totals.total_profit_loss) }} USDT</span>
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-3 col-sm-6 col-12">
+            <div class="info-box">
+              <span class="info-box-icon bg-warning"><i class="fas fa-calendar-alt"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">Monthly Profit</span>
+                <span class="info-box-number">
+                  {% if data.totals.percent_profit_monthly > 0 %}
+                    <span class="text-success"><i class="fas fa-caret-up"></i> {{"{:.2f}".format(data.totals.percent_profit_monthly)}}%</span>
+                  {% else %}
+                    <span class="text-danger"><i class="fas fa-caret-down"></i> {{"{:.2f}".format(data.totals.percent_profit_monthly)}}%</span>
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 col-12">
+            <div class="info-box">
+              <span class="info-box-icon bg-primary"><i class="fas fa-tachometer-alt"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">Daily Profit</span>
+                <span class="info-box-number">
+                  {% if data.totals.percent_profit_daily > 0 %}
+                    <span class="text-success"><i class="fas fa-caret-up"></i> {{"{:.2f}".format(data.totals.percent_profit_daily)}}%</span>
+                  {% else %}
+                    <span class="text-danger"><i class="fas fa-caret-down"></i> {{"{:.2f}".format(data.totals.percent_profit_daily)}}%</span>
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
 
     <!-- Main content -->
     <section class="content">
       <div class="container-fluid">
-        <!-- /.row -->
+        <!-- Trading Bots Table -->
         <div class="row">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Trading Bots</h3>
-                </div>
-                <!-- ./card-header -->
-                <div class="card-body">
-                  <table id="bots" class="table table-bordered table-hover">
-                    <thead>
-                      <tr>
-                        <th>Bot Name</th>
-                        <th>Strategy</th>
-                        <th>Trading Account</th>
-                        <th class="text-center">Profit/Loss</th>
-                        <th>Win Rate</th>
-                        <th class="text-center" style="width: 12%">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for bot in data.bots %}
-                      <tr>
-                        <td>
-                            <a href="{{ url_for('trading_blueprint.view_bot', bot_id=bot.id) }}" class="font-weight-bold">
-                                {{ bot.name }}
-                            </a> <br>
-                            <small>
-                              ID: {{ bot.id }} | 
-                              <i class="fa fa-calendar-alt" style="color: #4682B4;"></i>  {{ bot.days_running }} days ago |
-
-                              <!-- Extended Conditional Rendering for Bot Status -->
-                              {% if bot.status == 'active' %}
-                              {% set open_position = bot.positions | selectattr('status', 'equalto', 'open') | first %}
-
-                              {% if open_position %}
-                                  <!-- If the bot is active and has open positions, show a green circle and position type -->
-                                  <i class="fa fa-circle" style="color: #00FF00;" aria-label="Active Status"></i>
-                                  {{ open_position.pos_type | capitalize }} Position
-                              {% else %}
-                                  <!-- If the bot is active but does not have open positions, show an orange circle -->
-                                  <i class="fa fa-circle" style="color: #FFA500;" aria-label="Standby Status"></i> Standby
-                              {% endif %}
-                              {% else %}
-                              <!-- If the bot is inactive, show a gray circle -->
-                              <i class="fa fa-circle" style="color: #808080;" aria-label="Inactive Status"></i> Stopped
-                              {% endif %}
-                          </small>
-                        </td>
-                        <td>
-                          <a href="{{ url_for('strategies_blueprint.get_strategy', strategy_id=bot.strategy.id) }}" class="font-weight-bold">
-                              {{ bot.strategy.name }}
-                          </a> <br>
-                            <small>
-                              {{ bot.strategy.coin_pair }} | {{ bot.strategy.time_frame }}
-                            </small>
-                        </td>
-                        <td>{{ bot.account.account_name }} <br>
-                            <small>Exchange: {{ bot.account.exchange_name }} </small>
-                        </td>
-                        <td class="text-center p-3">
-                          {{ "{:.2f}".format(bot.total_profit_loss) }} USDT 
-                          <br>
-                          <small>
-                              7D: <span class="description-percentage 
-                                {% if bot.percent_profit_7d > 0 %}text-success
-                                {% elif bot.percent_profit_7d < 0 %}text-danger
-                                {% else %}text-secondary{% endif %}">
-                                <i class="fas 
-                                {% if bot.percent_profit_7d > 0 %}fa-caret-up
-                                {% elif bot.percent_profit_7d < 0 %}fa-caret-down
-                                {% endif %}"></i> 
-                                {{"{:.2f}".format(bot.percent_profit_7d)}}%
-                              </span>
-                      
-                              {% if bot.days_running >= 14 %}
-                              | 14D: <span class="description-percentage 
-                                {% if bot.percent_profit_14d > 0 %}text-success
-                                {% elif bot.percent_profit_14d < 0 %}text-danger
-                                {% else %}text-secondary{% endif %}">
-                                <i class="fas 
-                                {% if bot.percent_profit_14d > 0 %}fa-caret-up
-                                {% elif bot.percent_profit_14d < 0 %}fa-caret-down
-                                {% endif %}"></i> 
-                                {{"{:.2f}".format(bot.percent_profit_14d)}}%
-                              </span>
-                              {% endif %}
-                      
-                              {% if bot.days_running >= 30 %}
-                              | 30D: <span class="description-percentage 
-                                {% if bot.percent_profit_30d > 0 %}text-success
-                                {% elif bot.percent_profit_30d < 0 %}text-danger
-                                {% else %}text-secondary{% endif %}">
-                                <i class="fas 
-                                {% if bot.percent_profit_30d > 0 %}fa-caret-up
-                                {% elif bot.percent_profit_30d < 0 %}fa-caret-down
-                                {% endif %}"></i> 
-                                {{"{:.2f}".format(bot.percent_profit_30d)}}%
-                              </span>
-                              {% endif %}
-                      
-                              {% if bot.days_running >= 90 %}
-                              | 90D: <span class="description-percentage 
-                                {% if bot.percent_profit_90d > 0 %}text-success
-                                {% elif bot.percent_profit_90d < 0 %}text-danger
-                                {% else %}text-secondary{% endif %}">
-                                <i class="fas 
-                                {% if bot.percent_profit_90d > 0 %}fa-caret-up
-                                {% elif bot.percent_profit_90d < 0 %}fa-caret-down
-                                {% endif %}"></i> 
-                                {{"{:.2f}".format(bot.percent_profit_90d)}}%
-                              </span>
-                              {% endif %}
-                          </small>
-                        </td>
-                                                                 
-                        <td class="project_progress text-center p-3">
-                          <div class="progress progress-sm">
-                              {% if bot.win_rate < 40 %}
-                                  <div class="progress-bar bg-red" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
-                                      {{"{:.1f}".format(bot.win_rate)}} %
-                                  </div>
-                              {% elif bot.win_rate < 66 %}
-                                  <div class="progress-bar bg-yellow" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
-                                      {{"{:.1f}".format(bot.win_rate)}} %
-                                  </div>
-                              {% else %}
-                                  <div class="progress-bar bg-green" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
-                                      {{"{:.1f}".format(bot.win_rate)}} %
-                                  </div>
-                              {% endif %}
-                          </div>
-                          <small>
-                              {{ bot.closed_trades }} closed trades
-                          </small>
-                        </td>                         
-                        <td class="text-center">
-                          <!-- Edit Button -->
-                          <button type="button" class="btn btn-default btn-sm" onclick="editBot({{ bot.id }})">
-                              <i class="fas fa-edit"></i>
-                          </button>
-                      
-                          <!-- Pause/Start Button based on bot status -->
-                          {% if bot.status == 'active' %}
-                          <button type="button" class="btn btn-default btn-sm" onclick="pauseBot({{ bot.id }})">
-                              <i class="fas fa-pause"></i>
-                          </button>
-                          {% else %}
-                          <button type="button" class="btn btn-default btn-sm" onclick="startBot({{ bot.id }})">
-                              <i class="fas fa-play"></i>
-                          </button>
-                          {% endif %}
-                      
-                          <!-- Delete Button -->
-                          <button type="button" class="btn btn-default btn-sm" onclick="deleteBot({{ bot.id }})">
-                              <i class="far fa-trash-alt"></i>
-                          </button>
-                      </td>
-                      </tr>
-                      {% endfor %}
-                      <!-- Add Total Row -->
-                      <tr>
-                        <td colspan="3" class="text-right"><strong>Total Profit/Loss: <br> ROI: </strong></td>
-                        <td>
-                          ${{ "{:.2f}".format(data.totals.total_profit_loss) }}  <br>
-                          <span class="description-percentage
-                            {% if data.totals.total_percent_profit_loss > 0 %}text-success
-                            {% elif data.totals.total_percent_profit_loss < 0 %}text-danger
-                            {% else %}text-secondary{% endif %}">
-                            <i class="fas 
-                            {% if data.totals.total_percent_profit_loss > 0 %}fa-caret-up
-                            {% elif data.totals.total_percent_profit_loss < 0 %}fa-caret-down
-                            {% endif %}"></i>
-                            {{"{:.2f}".format(data.totals.total_percent_profit_loss)}}%
-                          </span>
-                        </td>
-                        <td colspan="2"></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <!-- /.card-body -->
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Trading Bots</h3>
               </div>
-              <!-- /.card -->
+              <!-- ./card-header -->
+              <div class="card-body">
+                <table id="bots" class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th>Bot Name</th>
+                      <th>Strategy</th>
+                      <th>Trading Account</th>
+                      <th class="text-center">Profit/Loss</th>
+                      <th>Win Rate</th>
+                      <th class="text-center" style="width: 12%">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for bot in data.bots %}
+                    <tr>
+                      <td>
+                          <a href="{{ url_for('trading_blueprint.view_bot', bot_id=bot.id) }}" class="font-weight-bold">
+                              {{ bot.name }}
+                          </a> <br>
+                          <small>
+                            ID: {{ bot.id }} | 
+                            <i class="fa fa-calendar-alt" style="color: #4682B4;"></i>  {{ bot.days_running }} days ago |
+
+                            <!-- Extended Conditional Rendering for Bot Status -->
+                            {% if bot.status == 'active' %}
+                            {% set open_position = bot.positions | selectattr('status', 'equalto', 'open') | first %}
+
+                            {% if open_position %}
+                                <!-- If the bot is active and has open positions, show a green circle and position type -->
+                                <i class="fa fa-circle" style="color: #00FF00;" aria-label="Active Status"></i>
+                                {{ open_position.pos_type | capitalize }} Position
+                            {% else %}
+                                <!-- If the bot is active but does not have open positions, show an orange circle -->
+                                <i class="fa fa-circle" style="color: #FFA500;" aria-label="Standby Status"></i> Standby
+                            {% endif %}
+                            {% else %}
+                            <!-- If the bot is inactive, show a gray circle -->
+                            <i class="fa fa-circle" style="color: #808080;" aria-label="Inactive Status"></i> Stopped
+                            {% endif %}
+                        </small>
+                      </td>
+                      <td>
+                        <a href="{{ url_for('strategies_blueprint.get_strategy', strategy_id=bot.strategy.id) }}" class="font-weight-bold">
+                            {{ bot.strategy.name }}
+                        </a> <br>
+                          <small>
+                            {{ bot.strategy.coin_pair }} | {{ bot.strategy.time_frame }}
+                          </small>
+                      </td>
+                      <td>{{ bot.account.account_name }} <br>
+                          <small>Balance: {{ bot.account.balance }} USDT</small>
+                      </td>
+                      <td class="text-center p-3">
+                        {{ "{:.2f}".format(bot.total_profit_loss) }} USDT 
+                        <br>
+                        <small>
+                          D: <span class="description-percentage {% if bot.percent_profit_daily > 0 %}text-success{% elif bot.percent_profit_daily < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                            <i class="fas {% if bot.percent_profit_daily > 0 %}fa-caret-up{% elif bot.percent_profit_daily < 0 %}fa-caret-down{% endif %}"></i> {{"{:.2f}".format(bot.percent_profit_daily)}}%
+                          </span>
+                          | M: <span class="description-percentage {% if bot.percent_profit_monthly > 0 %}text-success{% elif bot.percent_profit_monthly < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                            <i class="fas {% if bot.percent_profit_monthly > 0 %}fa-caret-up{% elif bot.percent_profit_monthly < 0 %}fa-caret-down{% endif %}"></i> {{"{:.2f}".format(bot.percent_profit_monthly)}}%
+                          </span>
+                          | T: <span class="description-percentage {% if bot.total_percent_profit_loss > 0 %}text-success{% elif bot.total_percent_profit_loss < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                            <i class="fas {% if bot.total_percent_profit_loss > 0 %}fa-caret-up{% elif bot.total_percent_profit_loss < 0 %}fa-caret-down{% endif %}"></i> {{"{:.2f}".format(bot.total_percent_profit_loss)}}%
+                          </span>
+                        </small>
+                      </td>
+                                                                 
+                      <td class="project_progress text-center p-3">
+                        <div class="progress progress-sm">
+                            {% if bot.win_rate < 40 %}
+                                <div class="progress-bar bg-red" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
+                                    {{"{:.1f}".format(bot.win_rate)}} %
+                                </div>
+                            {% elif bot.win_rate < 66 %}
+                                <div class="progress-bar bg-yellow" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
+                                    {{"{:.1f}".format(bot.win_rate)}} %
+                                </div>
+                            {% else %}
+                                <div class="progress-bar bg-green" role="progressbar" aria-valuenow="{{ bot.win_rate }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ bot.win_rate }}%">
+                                    {{"{:.1f}".format(bot.win_rate)}} %
+                                </div>
+                            {% endif %}
+                        </div>
+                        <small>
+                            {{ bot.closed_trades }} closed trades
+                        </small>
+                      </td>                         
+                      <td class="text-center">
+                        <!-- Edit Button -->
+                        <button type="button" class="btn btn-default btn-sm" onclick="editBot({{ bot.id }})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    
+                        <!-- Pause/Start Button based on bot status -->
+                        {% if bot.status == 'active' %}
+                        <button type="button" class="btn btn-default btn-sm" onclick="pauseBot({{ bot.id }})">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        {% else %}
+                        <button type="button" class="btn btn-default btn-sm" onclick="startBot({{ bot.id }})">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        {% endif %}
+                    
+                        <!-- Delete Button -->
+                        <button type="button" class="btn btn-default btn-sm" onclick="deleteBot({{ bot.id }})">
+                            <i class="far fa-trash-alt"></i>
+                        </button>
+                    </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <!-- /.card-body -->
             </div>
+            <!-- /.card -->
           </div>
+        </div>
       </div>
       <!-- /.container-fluid -->
     </section>
@@ -255,13 +266,36 @@
         "responsive": true,
         "autoWidth": false,
         "ordering": true,
-        "order": [[0, 'desc']] // Order by the first column as default
+        "order": [[3, 'desc']] // Order by the first column as default
       });
 
       // Reload the whole page every 300000 milliseconds (5 minutes)
       setInterval(function() {
           window.location.reload();
       }, 300000);
+
+      // Donut Chart
+      var donutChartCanvas = $('#donutChart').get(0).getContext('2d')
+      var donutData = {
+        labels: [
+            'Profit',
+            'Loss',
+            'Break-even'
+        ],
+        datasets: [{
+          data: [{{ data.totals.total_profit_loss }}, {{ -data.totals.total_profit_loss }}, 0],
+          backgroundColor: ['#00a65a', '#f56954', '#f39c12'],
+        }]
+      }
+      var donutOptions = {
+        maintainAspectRatio: false,
+        responsive: true,
+      }
+      new Chart(donutChartCanvas, {
+        type: 'doughnut',
+        data: donutData,
+        options: donutOptions
+      })
     });
 
     function deleteBot(botId) {

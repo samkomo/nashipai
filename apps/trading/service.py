@@ -10,6 +10,8 @@ from apps import db
 logger = logging.getLogger(__name__)
 # Set decimal precision to avoid floating-point precision errors
 getcontext().prec = 28
+
+
 class TradingService:
 
     @staticmethod
@@ -18,15 +20,31 @@ class TradingService:
         try:
             bots = TradingBot.query.filter_by(user_id=user_id).all()
             bots_data = [bot.to_dict() for bot in bots]  # Convert each bot instance to a dictionary
+
             # Calculate total profit/loss and percentage
             total_profit_loss = sum(bot.total_profit_loss for bot in bots)
             total_percent_profit_loss = sum(bot.total_percent_profit_loss for bot in bots)  # / len(bots) if bots else 0
+            
+            # Calculate total balance, ensuring each account is only counted once
+            seen_accounts = set()
+            total_balance = 0
+            for bot in bots:
+                if bot.account.id not in seen_accounts:
+                    total_balance += bot.account.balance
+                    seen_accounts.add(bot.account.id)
+
+            percent_profit_daily = sum(bot.percent_profit_daily for bot in bots)
+            percent_profit_monthly = sum(bot.percent_profit_monthly for bot in bots)
 
             # Create a new dictionary to store total data
             totals = {
                 'total_profit_loss': total_profit_loss,
-                'total_percent_profit_loss': total_percent_profit_loss
+                'total_percent_profit_loss': total_percent_profit_loss,
+                'total_balance': total_balance,
+                'percent_profit_daily': percent_profit_daily,
+                'percent_profit_monthly': percent_profit_monthly,
             }
+
 
             # Append totals to the bot_data list
             all_data = {
@@ -40,6 +58,8 @@ class TradingService:
 
         finally:
             db.session.remove()  # Ensure the session is closed after processing
+
+
 
     @staticmethod
     def create_bot(user_id, strategy_id, exchange_account_id, bot_name):
@@ -151,17 +171,6 @@ class TradingService:
 
     @staticmethod
     def execute_order(data: Dict[str, Any], bot: TradingBot) -> Order:
-        # exchange_class = getattr(ccxt, data['exchange'])
-        # exchange = exchange_class({
-        #     'apiKey': 'YOUR_API_KEY',
-        #     'secret': 'YOUR_SECRET',
-        # })
-
-        # if data['order_side'] == 'sell':
-        #     order_response = exchange.create_limit_sell_order(data['symbol'], float(data['order_size']), float(data['order_price']))
-        # else:
-        #     order_response = exchange.create_limit_buy_order(data['symbol'], float(data['order_size']), float(data['order_price']))
-
         new_order = Order(
             order_id=str(uuid.uuid4()),
             position_id=None,  # This will be set when the position is updated
@@ -228,23 +237,41 @@ class TradingService:
                 position.position_size = Decimal('0.0')
 
         db.session.flush()  # Replacing commit with flush
-        
 
         return position
 
     @staticmethod
     def calculate_pnl(position: Position, price: Decimal, side: str):
-        if position.status == 'closed' or position.exit_price != None:
+        if position.status == 'closed' or position.exit_price is not None:
             logger.info(f"Calculating PnL for position {position.id}:")
             logger.info(f"Position type: {position.pos_type}, Average entry price: {position.average_entry_price}, Exit price: {price}, Initial size: {position.initial_size}")
+
+            # Fetch account details to get fee rates
+            bot = TradingBot.query.get(position.trading_bot_id)
+            account = bot.account
+
+            maker_fee_rate = Decimal(account.maker_fee)
+            taker_fee_rate = Decimal(account.taker_fee)
+
+            # Calculate fees
+            entry_fee = maker_fee_rate * position.average_entry_price * abs(position.initial_size)
+            exit_fee = taker_fee_rate * price * abs(position.initial_size)
+            total_fees = entry_fee + exit_fee
+
             if position.pos_type == 'long':
-                position.profit_loss = (price - position.average_entry_price) * position.initial_size
+                gross_pnl = (price - position.average_entry_price) * position.initial_size
             elif position.pos_type == 'short':
-                position.profit_loss = (position.average_entry_price - price) * position.initial_size
+                gross_pnl = (position.average_entry_price - price) * position.initial_size
+
+            logger.info(f"Gross PnL: {gross_pnl}, Total fees: {total_fees}")
+
+            net_pnl = gross_pnl - total_fees
+
+            position.profit_loss = net_pnl
 
             logger.info(f"Calculated profit/loss: {position.profit_loss}")
 
-            position.percent_profit_loss = (position.profit_loss / (position.average_entry_price * abs(position.initial_size))) * Decimal('100')
+            position.percent_profit_loss = (net_pnl / (position.average_entry_price * abs(position.initial_size))) * Decimal('100')
 
             # Correct precision issues
             position.profit_loss = position.profit_loss.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
@@ -252,7 +279,9 @@ class TradingService:
 
             logger.info(f"Calculated percent profit/loss: {position.percent_profit_loss}")
 
-        db.session.commit()
+            # Update account balance
+            account.balance += position.profit_loss
+            db.session.commit()
 
     @staticmethod
     def manage_risk(data: Dict[str, Any], position: Position):
@@ -279,21 +308,6 @@ class TradingService:
         # Logic to update bot settings
         pass
 
-    # @staticmethod
-    # def delete_bot(bot_id):
-    #     """ Deletes a bot from the database """
-    #     try:
-    #         bot = TradingBot.query.get(bot_id)
-    #         if not bot:
-    #             return {'status': 'error', 'message': 'Bot not found.'}
-    #         db.session.delete(bot)
-    #         db.session.commit()
-    #         return {'status': 'success', 'message': 'Bot deleted successfully.'}
-    #     except Exception as e:
-    #         db.session.rollback()
-    #         logger.error(f'Error deleting bot: {str(e)}')
-    #         return {'status': 'error', 'message': 'Failed to delete bot.'}
-
     @staticmethod
     def delete_bot(bot_id):
         """ Deletes a bot from the database """
@@ -311,16 +325,11 @@ class TradingService:
             db.session.rollback()
             logger.error(f"An error occurred while deleting bot {bot_id}: {str(e)}")
             return {"status": "error", "message": f"An error occurred while deleting bot {bot_id}: {str(e)}"}
-        
+
     @staticmethod
     def place_order(bot_id, symbol, order_type, side, quantity, entry_price=None):
         # Logic to place an order
         pass
-
-    # @staticmethod
-    # def execute_order(order_id, execution_price):
-    #     # Logic to execute an order
-    #     pass
 
     @staticmethod
     def cancel_order(order_id):

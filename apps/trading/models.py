@@ -3,6 +3,13 @@ from decimal import Decimal
 from sqlalchemy import Numeric
 from sqlalchemy.orm import relationship
 from apps import db
+from sqlalchemy.ext.hybrid import hybrid_property
+
+# from datetime import datetime, timedelta
+# from decimal import Decimal
+# from sqlalchemy.ext.hybrid import hybrid_property
+# from apps import db
+
 
 class TradingBot(db.Model):
     __tablename__ = 'trading_bots'
@@ -37,7 +44,6 @@ class TradingBot(db.Model):
         # Return True if any position is open
         return any(position.status == 'open' for position in self.positions)
 
-
     def calculate_win_rate(self):
         closed_positions = [p for p in self.positions if p.status == 'closed']
         if not closed_positions:
@@ -49,22 +55,13 @@ class TradingBot(db.Model):
 
         return win_rate
     
-
-    @property
-    def percent_profit_7d(self):
-        return self._calculate_percent_profit_for_period(7)
+    @hybrid_property
+    def percent_profit_daily(self):
+        return self._calculate_percent_profit_for_period(1)
     
-    @property
-    def percent_profit_14d(self):
-        return self._calculate_percent_profit_for_period(14)
-    
-    @property
-    def percent_profit_30d(self):
+    @hybrid_property
+    def percent_profit_monthly(self):
         return self._calculate_percent_profit_for_period(30)
-    
-    @property
-    def percent_profit_90d(self):
-        return self._calculate_percent_profit_for_period(90)
     
     def _calculate_percent_profit_for_period(self, days):
         end_date = datetime.utcnow()
@@ -91,10 +88,8 @@ class TradingBot(db.Model):
             'has_open_position': self.has_open_position,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
             'days_running': days_running,
-            'percent_profit_7d': self.percent_profit_7d,
-            'percent_profit_14d': self.percent_profit_14d,
-            'percent_profit_30d': self.percent_profit_30d,
-            'percent_profit_90d': self.percent_profit_90d
+            'percent_profit_daily': self.percent_profit_daily,
+            'percent_profit_monthly': self.percent_profit_monthly,
         }
 
 class Position(db.Model):

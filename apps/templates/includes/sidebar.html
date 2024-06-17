@@ -66,29 +66,27 @@
               </li>         
             </ul>
           </li>
-          <li class="nav-item has-treeview {% if 'index' in segment %} menu-open {% endif %}">
-            <a href="#" class="nav-link {% if 'index' in segment %} active {% endif %}">
-              <i class="nav-icon fas fa-tachometer-alt"></i>
-              <p>
-                Incubator
-                <i class="right fas fa-angle-left"></i>
-              </p>
+          
+          <li class="nav-header">TRADING</li>
+          <li class="nav-item">
+            <a href="" class="nav-link">
+                <i class="nav-icon fas fa-chart-pie"></i>
+                <p>My Portfolio</p>
             </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="{{ url_for('strategies_blueprint.list_strategies') }}" class="nav-link">
-                    <i class="nav-icon fas fa-chart-line"></i>
-                    <p>Strategies</p>
-                </a>
-              </li>  
-              <li class="nav-item">
-                <a href="{{ url_for('trading_blueprint.list_bots') }}" class="nav-link">
-                    <i class="nav-icon fas fa-chart-pie"></i>
-                    <p>Bots</p>
-                </a>
-              </li>            
-            </ul>
-          </li>
+          </li> 
+          <li class="nav-item">
+            <a href="{{ url_for('strategies_blueprint.list_strategies') }}" class="nav-link">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>Strategies</p>
+            </a>
+          </li>  
+          <li class="nav-item">
+            <a href="{{ url_for('trading_blueprint.list_bots') }}" class="nav-link">
+                <i class="nav-icon fas fa-robot"></i>
+                <p>Bots</p>
+            </a>
+          </li> 
+          <li class="nav-header">OTHERS</li>
           <li class="nav-item">
             <a href="widgets.html" class="nav-link {% if 'widgets' in segment %} active {% endif %}">
               <i class="nav-icon fas fa-th"></i>

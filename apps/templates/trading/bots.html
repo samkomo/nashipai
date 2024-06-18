@@ -55,33 +55,28 @@
           </div>
           <div class="col-md-3 col-sm-6 col-12">
             <div class="info-box">
-              <span class="info-box-icon {% if data.totals.total_profit_loss > 0 %}bg-success{% else %}bg-danger{% endif %}">
-                <i class="fas fa-chart-line"></i>
-              </span>
+              <span class="info-box-icon bg-success"><i class="fas fa-chart-line"></i></span>
               <div class="info-box-content">
                 <span class="info-box-text">Net Profit</span>
                 <span class="info-box-number">
-                  {% if data.totals.total_profit_loss > 0 %}
-                    <span class="text-success">${{ "{:.2f}".format(data.totals.total_profit_loss) }} USDT</span>
-                  {% else %}
-                    <span class="text-danger">${{ "{:.2f}".format(data.totals.total_profit_loss) }} USDT</span>
-                  {% endif %}
+                  ${{ "{:.2f}".format(data.totals.total_profit_loss) }} USDT 
+                  ({{ "{:.2f}".format(data.totals.total_percent_profit_loss) }}%)
+
+                  
                 </span>
+                
               </div>
             </div>
           </div>
-          
           <div class="col-md-3 col-sm-6 col-12">
             <div class="info-box">
               <span class="info-box-icon bg-warning"><i class="fas fa-calendar-alt"></i></span>
               <div class="info-box-content">
                 <span class="info-box-text">Monthly Profit</span>
-                <span class="info-box-number">
-                  {% if data.totals.percent_profit_monthly > 0 %}
-                    <span class="text-success"><i class="fas fa-caret-up"></i> {{"{:.2f}".format(data.totals.percent_profit_monthly)}}%</span>
-                  {% else %}
-                    <span class="text-danger"><i class="fas fa-caret-down"></i> {{"{:.2f}".format(data.totals.percent_profit_monthly)}}%</span>
-                  {% endif %}
+                <span class="info-box-number {{ 'text-success' if data.totals.percent_profit_monthly > 0 else 'text-danger' }}">
+                  <i class="fas {{ 'fa-caret-up' if data.totals.percent_profit_monthly > 0 else 'fa-caret-down' }}"></i>
+                  ${{ "{:.2f}".format(data.totals.profit_loss_monthly) }} USDT 
+                  ({{ "{:.2f}".format(data.totals.percent_profit_monthly) }}%)
                 </span>
               </div>
             </div>
@@ -91,12 +86,11 @@
               <span class="info-box-icon bg-primary"><i class="fas fa-tachometer-alt"></i></span>
               <div class="info-box-content">
                 <span class="info-box-text">Daily Profit</span>
-                <span class="info-box-number">
-                  {% if data.totals.percent_profit_daily > 0 %}
-                    <span class="text-success"><i class="fas fa-caret-up"></i> {{"{:.2f}".format(data.totals.percent_profit_daily)}}%</span>
-                  {% else %}
-                    <span class="text-danger"><i class="fas fa-caret-down"></i> {{"{:.2f}".format(data.totals.percent_profit_daily)}}%</span>
-                  {% endif %}
+                <span class="info-box-number {{ 'text-success' if data.totals.percent_profit_daily > 0 else 'text-danger' }}">
+                  <i class="fas {{ 'fa-caret-up' if data.totals.percent_profit_daily > 0 else 'fa-caret-down' }}"></i>
+                  ${{ "{:.2f}".format(data.totals.profit_loss_daily) }} USDT 
+                  ({{ "{:.2f}".format(data.totals.percent_profit_daily) }}%)
+
                 </span>
               </div>
             </div>
@@ -104,8 +98,6 @@
         </div>
       </div>
     </section>
-
-
 
     <!-- Main content -->
     <section class="content">
@@ -266,7 +258,7 @@
         "responsive": true,
         "autoWidth": false,
         "ordering": true,
-        "order": [[3, 'desc']] // Order by the first column as default
+        "order": [[2, 'desc']] // Order by the first column as default
       });
 
       // Reload the whole page every 300000 milliseconds (5 minutes)

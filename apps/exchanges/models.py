@@ -1,5 +1,7 @@
 import datetime
 from apps import db
+from decimal import Decimal
+from sqlalchemy import Numeric
 
 class Exchange(db.Model):
     __tablename__ = 'exchanges'
@@ -79,7 +81,7 @@ class Account(db.Model):
     api_secret = db.Column(db.String(255), nullable=False)
     api_permissions = db.Column(db.String(255), nullable=True)  # Simplified to db.String type
     status = db.Column(db.String(50), nullable=False, default='active')
-    balance = db.Column(db.Float, nullable=True)  # Assuming balance can be represented as a db.Float
+    balance = db.Column(Numeric(precision=20, scale=8), default=Decimal('0.0'))  # Assuming balance can be represented as a db.Float
     open_orders = db.Column(db.Integer, nullable=True)  # Assuming number of open orders
     closed_orders = db.Column(db.Integer, nullable=True)  # Assuming number of closed orders
     transaction_history = db.Column(db.String(255), nullable=True)  # Simplify to a db.String or URL/link

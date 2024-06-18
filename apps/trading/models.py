@@ -28,20 +28,18 @@ class TradingBot(db.Model):
 
     @property
     def total_profit_loss(self):
-        return sum(position.profit_loss for position in self.positions if position.closed_at != None)
+        return sum(position.profit_loss for position in self.positions if position.closed_at is not None)
     
     @property
     def total_percent_profit_loss(self):
-        return sum(position.percent_profit_loss for position in self.positions if position.closed_at != None)
+        return sum(position.percent_profit_loss for position in self.positions if position.closed_at is not None)
     
     @property
     def closed_trades_count(self):
-        # Count positions with status 'closed'
         return sum(1 for position in self.positions if position.status == 'closed')
     
     @property
     def has_open_position(self):
-        # Return True if any position is open
         return any(position.status == 'open' for position in self.positions)
 
     def calculate_win_rate(self):
@@ -57,20 +55,43 @@ class TradingBot(db.Model):
     
     @hybrid_property
     def percent_profit_daily(self):
-        return self._calculate_percent_profit_for_period(1)
+        return self._calculate_percent_profit_for_day()
     
     @hybrid_property
     def percent_profit_monthly(self):
-        return self._calculate_percent_profit_for_period(30)
+        return self._calculate_percent_profit_for_month()
     
-    def _calculate_percent_profit_for_period(self, days):
+    @hybrid_property
+    def profit_loss_daily(self):
+        return self._calculate_profit_loss_for_day()
+
+    @hybrid_property
+    def profit_loss_monthly(self):
+        return self._calculate_profit_loss_for_month()
+    
+    def _calculate_percent_profit_for_day(self):
+        end_date = datetime.utcnow().date()
+        positions = [p for p in self.positions if p.closed_at is not None and p.closed_at.date() == end_date]
+        return sum(p.percent_profit_loss for p in positions)
+
+    def _calculate_percent_profit_for_month(self):
         end_date = datetime.utcnow()
-        start_date = end_date - timedelta(days=days)
+        start_date = end_date.replace(day=1)
         positions = [p for p in self.positions if p.closed_at is not None and start_date <= p.closed_at <= end_date]
         return sum(p.percent_profit_loss for p in positions)
 
+    def _calculate_profit_loss_for_day(self):
+        end_date = datetime.utcnow().date()
+        positions = [p for p in self.positions if p.closed_at is not None and p.closed_at.date() == end_date]
+        return sum(p.profit_loss for p in positions)
+
+    def _calculate_profit_loss_for_month(self):
+        end_date = datetime.utcnow()
+        start_date = end_date.replace(day=1)
+        positions = [p for p in self.positions if p.closed_at is not None and start_date <= p.closed_at <= end_date]
+        return sum(p.profit_loss for p in positions)
+
     def to_dict(self):
-        """ Serialize the TradingBot object including strategy details. """
         days_running = (datetime.utcnow() - self.created_at).days if self.created_at else 0
         return {
             'id': self.id,
@@ -90,8 +111,10 @@ class TradingBot(db.Model):
             'days_running': days_running,
             'percent_profit_daily': self.percent_profit_daily,
             'percent_profit_monthly': self.percent_profit_monthly,
+            'profit_loss_daily': self.profit_loss_daily,
+            'profit_loss_monthly': self.profit_loss_monthly,
         }
-
+    
 class Position(db.Model):
     __tablename__ = 'positions'
     id = db.Column(db.Integer, primary_key=True)

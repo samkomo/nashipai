@@ -33,16 +33,20 @@ class TradingService:
                     total_balance += bot.account.balance
                     seen_accounts.add(bot.account.id)
 
-            percent_profit_daily = sum(bot.percent_profit_daily for bot in bots)
-            percent_profit_monthly = sum(bot.percent_profit_monthly for bot in bots)
+            total_percent_profit_daily = sum(bot.percent_profit_daily for bot in bots)
+            total_percent_profit_monthly = sum(bot.percent_profit_monthly for bot in bots)
+            total_profit_loss_daily = sum(bot.profit_loss_daily for bot in bots)
+            total_profit_loss_monthly = sum(bot.profit_loss_monthly for bot in bots)
 
             # Create a new dictionary to store total data
             totals = {
                 'total_profit_loss': total_profit_loss,
                 'total_percent_profit_loss': total_percent_profit_loss,
                 'total_balance': total_balance,
-                'percent_profit_daily': percent_profit_daily,
-                'percent_profit_monthly': percent_profit_monthly,
+                'percent_profit_daily': total_percent_profit_daily,
+                'percent_profit_monthly': total_percent_profit_monthly,
+                'profit_loss_daily': total_profit_loss_daily,
+                'profit_loss_monthly': total_profit_loss_monthly,
             }
 
 
@@ -250,8 +254,9 @@ class TradingService:
             bot = TradingBot.query.get(position.trading_bot_id)
             account = bot.account
 
-            maker_fee_rate = Decimal(account.maker_fee)
-            taker_fee_rate = Decimal(account.taker_fee)
+            # Convert fee percentages into decimal rates
+            maker_fee_rate = Decimal(account.maker_fee) / Decimal('100')
+            taker_fee_rate = Decimal(account.taker_fee) / Decimal('100')
 
             # Calculate fees
             entry_fee = maker_fee_rate * position.average_entry_price * abs(position.initial_size)

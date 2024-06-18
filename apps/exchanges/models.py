@@ -113,7 +113,7 @@ class Account(db.Model):
             'api_secret': self.api_secret,
             'api_permissions': self.api_permissions,
             'status': self.status,
-            'balance': self.balance,
+            'balance': float(self.balance),
             'open_orders': self.open_orders,
             'closed_orders': self.closed_orders,
             'transaction_history': self.transaction_history,

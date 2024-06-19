@@ -61,7 +61,7 @@
                 <span class="info-box-number {% if data.totals.total_percent_profit_loss > 0 %}text-success{% elif data.totals.total_percent_profit_loss < 0 %}text-danger{% else %}text-secondary{% endif %}">
                   ${{ "{:,.2f}".format(data.totals.total_profit_loss) }} USDT 
                   ({{ "{:.2f}".format(data.totals.total_percent_profit_loss) }}%)
-                  <i class="fas {% if data.totals.total_percent_profit_loss > 0 %}fa-caret-up{% elif data.totals.total_percent_profit_loss < 0 %}fa-caret-down{% endif %}"></i>
+                  <i class="fas {% if data.totals.total_percent_profit_loss > 0 %}fa-arrow-up{% elif data.totals.total_percent_profit_loss < 0 %}fa-arrow-down{% endif %}"></i>
                   
                 </span>
                 
@@ -76,7 +76,7 @@
                 <span class="info-box-number {% if data.totals.percent_profit_monthly > 0 %}text-success{% elif data.totals.percent_profit_monthly < 0 %}text-danger{% else %}text-secondary{% endif %}">
                   ${{ "{:,.2f}".format(data.totals.profit_loss_monthly) }} USDT 
                   ({{ "{:.2f}".format(data.totals.percent_profit_monthly) }}%)
-                  <i class="fas {% if data.totals.percent_profit_monthly > 0 %}fa-caret-up{% elif data.totals.percent_profit_monthly < 0 %}fa-caret-down{% endif %}"></i>
+                  <i class="fas {% if data.totals.percent_profit_monthly > 0 %}fa-arrow-up{% elif data.totals.percent_profit_monthly < 0 %}fa-arrow-down{% endif %}"></i>
                 </span>
               </div>
             </div>
@@ -89,7 +89,7 @@
                 <span class="info-box-number {% if data.totals.percent_profit_daily > 0 %}text-success{% elif data.totals.percent_profit_daily < 0 %}text-danger{% else %}text-secondary{% endif %}">
                   ${{ "{:,.2f}".format(data.totals.profit_loss_daily) }} USDT 
                   ({{ "{:.2f}".format(data.totals.percent_profit_daily) }}%)
-                  <i class="fas {% if data.totals.percent_profit_daily > 0 %}fa-caret-up{% elif data.totals.percent_profit_daily < 0 %}fa-caret-down{% endif %}"></i>
+                  <i class="fas {% if data.totals.percent_profit_daily > 0 %}fa-arrow-up{% elif data.totals.percent_profit_daily < 0 %}fa-arrow-down{% endif %}"></i>
 
                 </span>
               </div>

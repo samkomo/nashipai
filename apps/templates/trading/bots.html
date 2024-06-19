@@ -160,7 +160,7 @@
                           </small>
                       </td>
                       <td>{{ bot.account.account_name }} <br>
-                          <small>Balance: {{ bot.account.balance }} USDT</small>
+                          <small>Bal.: {{  "{:,.2f}".format(bot.account.balance) }} USDT</small>
                       </td>
                       <td class="text-center p-3">
                         {{ "{:.2f}".format(bot.total_profit_loss) }} USDT 

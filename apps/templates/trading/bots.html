@@ -15,8 +15,7 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- ChartJS -->
-  <script src="/static/assets/plugins/chart.js/Chart.min.js"></script>
+
 {% endblock stylesheets %}
 
 {% block content %}
@@ -38,6 +37,8 @@
         </div>
       </div><!-- /.container-fluid -->
     </section>
+
+ 
     
     <!-- Analytics Summary -->
     <section class="content">
@@ -59,12 +60,10 @@
               <div class="info-box-content">
                 <span class="info-box-text">Net Profit</span>
                 <span class="info-box-number {% if data.totals.total_percent_profit_loss > 0 %}text-success{% elif data.totals.total_percent_profit_loss < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                  <i class="fas {% if data.totals.total_percent_profit_loss > 0 %}fa-caret-up{% elif data.totals.total_percent_profit_loss < 0 %}fa-caret-down{% endif %}"></i>
                   ${{ "{:,.2f}".format(data.totals.total_profit_loss) }} USDT 
                   ({{ "{:.2f}".format(data.totals.total_percent_profit_loss) }}%)
-                  <i class="fas {% if data.totals.total_percent_profit_loss > 0 %}fa-arrow-up{% elif data.totals.total_percent_profit_loss < 0 %}fa-arrow-down{% endif %}"></i>
-                  
                 </span>
-                
               </div>
             </div>
           </div>
@@ -74,9 +73,9 @@
               <div class="info-box-content">
                 <span class="info-box-text">Monthly Profit</span>
                 <span class="info-box-number {% if data.totals.percent_profit_monthly > 0 %}text-success{% elif data.totals.percent_profit_monthly < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                  <i class="fas {% if data.totals.percent_profit_monthly > 0 %}fa-caret-up{% elif data.totals.percent_profit_monthly < 0 %}fa-caret-down{% endif %}"></i>
                   ${{ "{:,.2f}".format(data.totals.profit_loss_monthly) }} USDT 
                   ({{ "{:.2f}".format(data.totals.percent_profit_monthly) }}%)
-                  <i class="fas {% if data.totals.percent_profit_monthly > 0 %}fa-arrow-up{% elif data.totals.percent_profit_monthly < 0 %}fa-arrow-down{% endif %}"></i>
                 </span>
               </div>
             </div>
@@ -87,10 +86,9 @@
               <div class="info-box-content">
                 <span class="info-box-text">Daily Profit</span>
                 <span class="info-box-number {% if data.totals.percent_profit_daily > 0 %}text-success{% elif data.totals.percent_profit_daily < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                  <i class="fas {% if data.totals.percent_profit_daily > 0 %}fa-caret-up{% elif data.totals.percent_profit_daily < 0 %}fa-caret-down{% endif %}"></i>
                   ${{ "{:,.2f}".format(data.totals.profit_loss_daily) }} USDT 
                   ({{ "{:.2f}".format(data.totals.percent_profit_daily) }}%)
-                  <i class="fas {% if data.totals.percent_profit_daily > 0 %}fa-arrow-up{% elif data.totals.percent_profit_daily < 0 %}fa-arrow-down{% endif %}"></i>
-
                 </span>
               </div>
             </div>
@@ -341,6 +339,8 @@
                 });
             }
         });
+        
     }
   </script>
+
 {% endblock javascripts %}

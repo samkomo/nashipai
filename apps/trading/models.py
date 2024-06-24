@@ -97,7 +97,7 @@ class TradingBot(db.Model):
             'id': self.id,
             'name': self.name,
             'strategy': self.strategy.to_dict_bot() if self.strategy else None,
-            'account': self.account.to_dict_bot() if self.account else None,
+            'account': self.account.to_dict() if self.account else None,
             'positions': [position.to_dict() for position in self.positions] if self.positions else [],
             'user_id': self.user_id,
             'exchange_account_id': self.exchange_account_id,

@@ -21,6 +21,7 @@ class User(db.Model, UserMixin):
 
     roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
     profile = db.relationship('UserProfile', backref='user', uselist=False, cascade='all, delete-orphan')
+    accounts = db.relationship('Account', back_populates='user', lazy='dynamic')
 
     def to_dict(self):
         return {

@@ -1,0 +1,306 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Tempusdominus Bootstrap 4 -->
+  <link rel="stylesheet" href="/static/assets/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+  <!-- iCheck -->
+  <link rel="stylesheet" href="/static/assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- JQVMap -->
+  <link rel="stylesheet" href="/static/assets/plugins/jqvmap/jqvmap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- overlayScrollbars -->
+  <link rel="stylesheet" href="/static/assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+  <!-- Daterange picker -->
+  <link rel="stylesheet" href="/static/assets/plugins/daterangepicker/daterangepicker.css">
+  <!-- summernote -->
+  <link rel="stylesheet" href="/static/assets/plugins/summernote/summernote-bs4.min.css">
+    <!-- ChartJS -->
+    <script src="/static/assets/plugins/chart.js/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock stylesheets %}
+
+{% block content %}
+  
+  <div class="content-wrapper">
+
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">Dashboard</h1>
+          </div><!-- /.col -->
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Dashboard v1</li>
+            </ol>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+   <!-- Analytics Summary -->
+   <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <!-- <h3 class="card-title">Aggregate Account Balance</h3> -->
+          <div class="card">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <!-- Pie Chart -->
+                  <canvas id="strategyPieChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+                <div class="col-md-8">
+                  <!-- Line Chart -->
+                  <canvas id="accountProgressChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+                      <!-- TABLE: LATEST ORDERS -->
+            <div class="card">
+              <div class="card-header border-transparent">
+                <h3 class="card-title">Latest Orders</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table m-0">
+                    <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Item</th>
+                      <th>Status</th>
+                      <th>Popularity</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                      <td><a href="pages/examples/invoice.html">OR9842</a></td>
+                      <td>Call of Duty IV</td>
+                      <td><span class="badge badge-success">Shipped</span></td>
+                      <td>
+                        <div class="sparkbar" data-color="#00a65a" data-height="20">90,80,90,-70,61,-83,63</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><a href="pages/examples/invoice.html">OR1848</a></td>
+                      <td>Samsung Smart TV</td>
+                      <td><span class="badge badge-warning">Pending</span></td>
+                      <td>
+                        <div class="sparkbar" data-color="#f39c12" data-height="20">90,80,-90,70,61,-83,68</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                      <td>iPhone 6 Plus</td>
+                      <td><span class="badge badge-danger">Delivered</span></td>
+                      <td>
+                        <div class="sparkbar" data-color="#f56954" data-height="20">90,-80,90,70,-61,83,63</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                      <td>Samsung Smart TV</td>
+                      <td><span class="badge badge-info">Processing</span></td>
+                      <td>
+                        <div class="sparkbar" data-color="#00c0ef" data-height="20">90,80,-90,70,-61,83,63</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><a href="pages/examples/invoice.html">OR1848</a></td>
+                      <td>Samsung Smart TV</td>
+                      <td><span class="badge badge-warning">Pending</span></td>
+                      <td>
+                        <div class="sparkbar" data-color="#f39c12" data-height="20">90,80,-90,70,61,-83,68</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                      <td>iPhone 6 Plus</td>
+                      <td><span class="badge badge-danger">Delivered</span></td>
+                      <td>
+                        <div class="sparkbar" data-color="#f56954" data-height="20">90,-80,90,70,-61,83,63</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><a href="pages/examples/invoice.html">OR9842</a></td>
+                      <td>Call of Duty IV</td>
+                      <td><span class="badge badge-success">Shipped</span></td>
+                      <td>
+                        <div class="sparkbar" data-color="#00a65a" data-height="20">90,80,90,-70,61,-83,63</div>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!-- /.table-responsive -->
+              </div>
+              <!-- /.card-body -->
+              <div class="card-footer clearfix">
+                <a href="javascript:void(0)" class="btn btn-sm btn-info float-left">Place New Order</a>
+                <a href="javascript:void(0)" class="btn btn-sm btn-secondary float-right">View All Orders</a>
+              </div>
+              <!-- /.card-footer -->
+            </div>
+            <!-- /.card -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- jQuery UI 1.11.4 -->
+  <script src="/static/assets/plugins/jquery-ui/jquery-ui.min.js"></script>
+  <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+  <script>
+    $.widget.bridge('uibutton', $.ui.button)
+  </script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- ChartJS -->
+  <!-- <script src="/static/assets/plugins/chart.js/Chart.min.js"></script> -->
+  <!-- Sparkline -->
+  <script src="/static/assets/plugins/sparklines/sparkline.js"></script>
+  <!-- JQVMap -->
+  <script src="/static/assets/plugins/jqvmap/jquery.vmap.min.js"></script>
+  <script src="/static/assets/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+  <!-- jQuery Knob Chart -->
+  <script src="/static/assets/plugins/jquery-knob/jquery.knob.min.js"></script>
+  <!-- daterangepicker -->
+  <script src="/static/assets/plugins/moment/moment.min.js"></script>
+  <script src="/static/assets/plugins/daterangepicker/daterangepicker.js"></script>
+  <!-- Tempusdominus Bootstrap 4 -->
+  <script src="/static/assets/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+  <!-- Summernote -->
+  <script src="/static/assets/plugins/summernote/summernote-bs4.min.js"></script>
+  <!-- overlayScrollbars -->
+  <script src="/static/assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.js"></script>
+  <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+  <script src="/static/assets/js/pages/dashboard.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="/static/assets/js/demo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+       // Sample data
+       const data = {
+         strategies: [
+           { name: 'Strategy 1', total_balance: 50000 },
+           { name: 'Strategy 2', total_balance: 30000 },
+           { name: 'Strategy 3', total_balance: 20000 }
+         ],
+         progress: [
+           { date: '2024-06-01', balance: 40000 },
+           { date: '2024-06-02', balance: 42000 },
+           { date: '2024-06-03', balance: 43000 },
+           { date: '2024-06-04', balance: 44000 },
+           { date: '2024-06-05', balance: 46000 },
+           { date: '2024-06-06', balance: 47000 },
+           { date: '2024-06-07', balance: 50000 }
+         ]
+       };
+ 
+       // Pie Chart
+       var strategyPieChartCanvas = document.getElementById('strategyPieChart').getContext('2d');
+       var strategyPieChart = new Chart(strategyPieChartCanvas, {
+         type: 'doughnut',
+         data: {
+           labels: data.strategies.map(strategy => strategy.name),
+           datasets: [{
+             data: data.strategies.map(strategy => strategy.total_balance),
+             backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+           }]
+         },
+         options: {
+           responsive: true,
+           maintainAspectRatio: false,
+         }
+       });
+ 
+       // Line Chart
+       var accountProgressChartCanvas = document.getElementById('accountProgressChart').getContext('2d');
+       var accountProgressChart = new Chart(accountProgressChartCanvas, {
+         type: 'line',
+         data: {
+           labels: data.progress.map(point => point.date),
+           datasets: [{
+             label: 'Account Balance (USDT)',
+             data: data.progress.map(point => point.balance),
+             borderColor: 'rgba(75, 192, 192, 1)',
+             backgroundColor: 'rgba(75, 192, 192, 0.2)',
+             fill: false,
+           }]
+         },
+         options: {
+           responsive: true,
+           maintainAspectRatio: false,
+           scales: {
+             xAxes: [{
+               type: 'time',
+               time: {
+                 unit: 'day'
+               },
+               distribution: 'linear',
+             }],
+             yAxes: [{
+               ticks: {
+                 beginAtZero: true,
+                 callback: function(value) { return '$' + value.toLocaleString(); }
+               }
+             }]
+           }
+         }
+       });
+     });
+ 
+   </script>
+{% endblock javascripts %}
